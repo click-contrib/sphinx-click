@@ -43,10 +43,9 @@ documentation.
 
 .. code-block::
 
-   .. click::
-      :module: my_path.to.my_module
-      :func: my_func
+   .. click:: module:parser
       :prog: hello-world
+      :show-nested:
 
 Detailed information on the various options available is provided in the
 `documentation <https://sphinx-click.readthedocs.io>`_.
