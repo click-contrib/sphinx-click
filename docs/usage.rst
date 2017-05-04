@@ -69,3 +69,41 @@ output, add the ``show-nested`` flag.
     .. click:: hello_world:greet
       :prog: hello-world
       :show-nested:
+
+Modifying ``sys.path``
+----------------------
+
+If the application or script you wish to document is not installed (i.e. you
+have not installed it with `pip` or run ``python setup.py``), then you may need
+to modify ``sys.path``. For example, given the following application::
+
+    git
+      |- git
+      |    |- __init__.py
+      |    \- git.py
+      \- docs
+          |- git.rst
+          |- index.rst
+           \- conf.py
+
+then it would be necessary to add the following to ``git/docs/conf.py``:
+
+.. code-block:: python
+
+   import os
+   import sys
+   sys.path.insert(0, os.path.abspath('..'))
+
+Once done, you could include the following in ``git/docs/git.rst`` to document
+the application:
+
+.. code-block:: rst
+
+    .. click:: git.git:cli
+       :prog: git
+       :show-nested:
+
+assuming the group or command in ``git.git`` is named ``cli``.
+
+Refer to `issue #2 <https://github.com/click-contrib/sphinx-click/issues/2>`__
+for more information.
