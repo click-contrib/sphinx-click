@@ -164,7 +164,7 @@ def _format_command(ctx, show_nested):
     if show_nested:
         return
 
-    commands = getattr(ctx.command, 'commands', {}).items()
+    commands = sorted(getattr(ctx.command, 'commands', {}).items())
 
     if commands:
         yield '.. rubric:: Commands'
@@ -261,7 +261,7 @@ class ClickDirective(Directive):
 
         if show_nested:
             commands = getattr(ctx.command, 'commands', {})
-            for command_name, command_obj in commands.items():
+            for command_name, command_obj in sorted(commands.items()):
                 section.extend(self._generate_nodes(
                     command_name,
                     command_obj,
