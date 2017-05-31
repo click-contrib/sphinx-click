@@ -59,8 +59,32 @@ def _get_help_record(opt):
     return ', '.join(rv), help
 
 
+def _format_description(ctx):
+    """Format the description for a given `click.Command`.
+
+    We parse this as reStructuredText, allowing users to embed rich
+    information in their help messages if they so choose.
+    """
+    if not ctx.command.help:
+        return
+
+    for line in statemachine.string2lines(
+            ctx.command.help, tab_width=4, convert_whitespace=True):
+        yield line
+    yield ''
+
+
+def _format_usage(ctx):
+    """Format the usage for a `click.Command`."""
+    yield '.. code-block:: shell'
+    yield ''
+    for line in _get_usage(ctx).splitlines():
+        yield _indent(line)
+    yield ''
+
+
 def _format_option(opt):
-    """Format the output a `click.Option`."""
+    """Format the output for a `click.Option`."""
     opt = _get_help_record(opt)
 
     yield '.. option:: {}'.format(opt[0])
@@ -71,6 +95,18 @@ def _format_option(opt):
             yield _indent(line)
 
 
+def _format_options(ctx):
+    """Format all `click.Option` for a `click.Command`."""
+    # the hidden attribute is part of click 7.x only hence use of getattr
+    params = [x for x in ctx.command.params if isinstance(x, click.Option)
+              and not getattr(x, 'hidden', False)]
+
+    for param in params:
+        for line in _format_option(param):
+            yield line
+        yield ''
+
+
 def _format_argument(arg):
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
@@ -78,6 +114,16 @@ def _format_argument(arg):
     yield _indent('{} argument{}'.format(
         'Required' if arg.required else 'Optional',
         '(s)' if arg.nargs != 1 else ''))
+
+
+def _format_arguments(ctx):
+    """Format all `click.Argument` for a `click.Command`."""
+    params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
+
+    for param in params:
+        for line in _format_argument(param):
+            yield line
+        yield ''
 
 
 def _format_envvar(param):
@@ -94,6 +140,16 @@ def _format_envvar(param):
     yield _indent('Provide a default for :option:`{}`'.format(param_ref))
 
 
+def _format_envvars(ctx):
+    """Format all envvars for a `click.Command`."""
+    params = [x for x in ctx.command.params if getattr(x, 'envvar')]
+
+    for param in params:
+        for line in _format_envvar(param):
+            yield line
+        yield ''
+
+
 def _format_subcommand(command):
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command[0])
@@ -107,58 +163,50 @@ def _format_subcommand(command):
 
 def _format_command(ctx, show_nested):
     """Format the output of `click.Command`."""
+
+    # description
+
+    for line in _format_description(ctx):
+        yield line
+
     yield '.. program:: {}'.format(ctx.command_path)
 
     # usage
 
-    yield '.. code-block:: shell'
-    yield ''
-    for line in _get_usage(ctx).splitlines():
-        yield _indent(line)
-    yield ''
+    for line in _format_usage(ctx):
+        yield line
 
     # options
 
-    # the hidden attribute is part of click 7.x only hence use of getattr
-    params = [x for x in ctx.command.params if isinstance(x, click.Option)
-              and not getattr(x, 'hidden', False)]
-
-    if params:
+    lines = list(_format_options(ctx))
+    if lines:
         # we use rubric to provide some separation without exploding the table
         # of contents
         yield '.. rubric:: Options'
         yield ''
 
-    for param in params:
-        for line in _format_option(param):
-            yield line
-        yield ''
+    for line in lines:
+        yield line
 
     # arguments
 
-    params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
-
-    if params:
+    lines = list(_format_arguments(ctx))
+    if lines:
         yield '.. rubric:: Arguments'
         yield ''
 
-    for param in params:
-        for line in _format_argument(param):
-            yield line
-        yield ''
+    for line in lines:
+        yield line
 
     # environment variables
 
-    params = [x for x in ctx.command.params if getattr(x, 'envvar')]
-
-    if params:
+    lines = list(_format_envvars(ctx))
+    if lines:
         yield '.. rubric:: Environment variables'
         yield ''
 
-    for param in params:
-        for line in _format_envvar(param):
-            yield line
-        yield ''
+    for line in lines:
+        yield line
 
     # if we're nesting commands, we need to do this slightly differently
     if show_nested:
@@ -220,44 +268,24 @@ class ClickDirective(Directive):
 
         # Title
 
-        # We build this with plain old docutils nodes
-
         section = nodes.section(
             '',
             nodes.title(text=name),
             ids=[nodes.make_id(ctx.command_path)],
             names=[nodes.fully_normalize_name(ctx.command_path)])
 
+        # Summary
+
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
-        # Description
-
-        # We parse this as reStructuredText, allowing users to embed rich
-        # information in their help messages if they so choose.
-
-        if ctx.command.help:
-            for line in statemachine.string2lines(
-                    ctx.command.help, tab_width=4, convert_whitespace=True):
-                result.append(line, source_name)
-
-            result.append('', source_name)
-
-        # Summary
-
-        if isinstance(command, click.Command):
-            summary = _format_command(ctx, show_nested)
-        else:
-            # TODO(stephenfin): Do we care to differentiate? Perhaps we
-            # shouldn't show usage for groups?
-            summary = _format_command(ctx, show_nested)
-
-        for line in summary:
+        lines = _format_command(ctx, show_nested)
+        for line in lines:
             result.append(line, source_name)
 
         self.state.nested_parse(result, 0, section)
 
-        # Commands
+        # Subcommands
 
         if show_nested:
             commands = getattr(ctx.command, 'commands', {})
