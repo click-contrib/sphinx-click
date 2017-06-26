@@ -187,6 +187,11 @@ class ClickDirective(Directive):
 
     def _load_module(self, module_path):
         """Load the module."""
+
+        # __import__ will fail on unicode,
+        # so we ensure module path is a string here.
+        module_path = str(module_path)
+
         try:
             module_name, attr_name = module_path.split(':', 1)
         except ValueError:  # noqa
