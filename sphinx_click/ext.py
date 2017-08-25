@@ -1,9 +1,9 @@
 from docutils import nodes
+from docutils.parsers import rst
 from docutils.parsers.rst import directives
 from docutils import statemachine
 
 import click
-from sphinx.util.compat import Directive
 
 
 def _indent(text, level=1):
@@ -224,7 +224,7 @@ def _format_command(ctx, show_nested):
         yield ''
 
 
-class ClickDirective(Directive):
+class ClickDirective(rst.Directive):
 
     has_content = False
     required_arguments = 1
