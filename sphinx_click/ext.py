@@ -273,15 +273,15 @@ class ClickDirective(rst.Directive):
 
         # Title
 
+        source_name = ctx.command_path
         section = nodes.section(
             '',
-            nodes.title(text=name),
-            ids=[nodes.make_id(ctx.command_path)],
-            names=[nodes.fully_normalize_name(ctx.command_path)])
+            nodes.title(text=source_name),
+            ids=[nodes.make_id(source_name)],
+            names=[nodes.fully_normalize_name(source_name)])
 
         # Summary
 
-        source_name = ctx.command_path
         result = statemachine.ViewList()
 
         lines = _format_command(ctx, show_nested)
