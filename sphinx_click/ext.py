@@ -59,6 +59,8 @@ def _get_help_record(opt):
 
         if isinstance(opt.type, click.types.Choice):
             extra.append('one of: ' + ', '.join(opt.type.choices))
+    if opt.default:
+        extra.append('default: %s' % opt.default)
     if extra:
         help = '%s[%s]' % (help and help + '  ' or '', '; '.join(extra))
 
