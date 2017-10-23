@@ -53,6 +53,12 @@ def _get_help_record(opt):
                      else opt.default, ))
     if opt.required:
         extra.append('required')
+    if opt.type:
+        # append the datatype
+        extra.append(opt.type.name)
+
+        if isinstance(opt.type, click.types.Choice):
+            extra.append('one of: ' + ', '.join(opt.type.choices))
     if extra:
         help = '%s[%s]' % (help and help + '  ' or '', '; '.join(extra))
 
