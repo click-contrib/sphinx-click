@@ -2,6 +2,7 @@ from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
 from docutils import statemachine
+import traceback
 
 import click
 
@@ -243,14 +244,21 @@ class ClickDirective(rst.Directive):
         try:
             module_name, attr_name = module_path.split(':', 1)
         except ValueError:  # noqa
-            raise self.error('"{}" is not of format "module.parser"'.format(
+            raise self.error('"{}" is not of format "module:parser"'.format(
                 module_path))
 
         try:
             mod = __import__(module_name, globals(), locals(), [attr_name])
-        except:  # noqa
-            raise self.error('Failed to import "{}" from "{}"'.format(
-                attr_name, module_name))
+        except (Exception, SystemExit) as exc:  # noqa
+            err_msg = 'Failed to import "{}" from "{}". '.format(
+                attr_name, module_name)
+            if isinstance(exc, SystemExit):
+                err_msg += 'The module appeared to call sys.exit()'
+            else:
+                err_msg += 'The following exception was raised:\n{}'.format(
+                    traceback.format_exc())
+
+            raise self.error(err_msg)
 
         if not hasattr(mod, attr_name):
             raise self.error('Module "{}" has no attribute "{}"'.format(
