@@ -30,6 +30,9 @@ directive`__.
    `:show-nested:`
      Enable full documentation for sub-commands.
 
+   `:commands:`
+     Document only listed commands.
+
 __ http://www.sphinx-doc.org/en/stable/extdev/markupapi.html
 __ http://click.pocoo.org/
 
@@ -54,6 +57,12 @@ module:
         """Greet a user."""
         click.echo('Hello %s' % user)
 
+    @greet.command()
+    def world(user):
+        """Greet the world."""
+        click.echo('Hello world!')
+
+
 To document this, use the following:
 
 .. code-block:: rst
@@ -69,6 +78,14 @@ output, add the ``show-nested`` flag.
     .. click:: hello_world:greet
       :prog: hello-world
       :show-nested:
+
+You can also document only selected commands by using ``:commands:`` option.
+
+.. code-block:: rst
+
+    .. click:: hello_world:greet
+      :prog: hello-world
+      :commands: hello
 
 Modifying ``sys.path``
 ----------------------

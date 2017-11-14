@@ -24,6 +24,8 @@ class GroupTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
         .. program:: cli
         .. code-block:: shell
 
@@ -48,6 +50,8 @@ class GroupTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
         .. program:: cli
         .. code-block:: shell
 
@@ -104,6 +108,8 @@ class NestedCommandsTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
         .. program:: cli
         .. code-block:: shell
 
@@ -126,8 +132,71 @@ class NestedCommandsTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=True))
 
         self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
         .. program:: cli
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
+        """).lstrip(), '\n'.join(output))
+
+
+class CommandFilterTestCase(unittest.TestCase):
+
+    @staticmethod
+    def _get_ctx():
+
+        @click.group()
+        def cli():
+            """A sample command group."""
+
+        @cli.command()
+        def hello():
+            """A sample command."""
+
+        @cli.command()
+        def world():
+            """A world command."""
+
+        return click.Context(cli, info_name='cli')
+
+    def test_no_commands(self):
+        """Validate an empty command group."""
+
+        ctx = self._get_ctx()
+        output = list(ext._format_command(ctx, show_nested=False, commands=''))
+
+        self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+        """).lstrip(), '\n'.join(output))
+
+
+    def test_order_of_commands(self):
+        """Validate the order of commands."""
+
+        ctx = self._get_ctx()
+        output = list(ext._format_command(ctx, show_nested=False, commands='world, hello'))
+
+        self.assertEqual(textwrap.dedent("""
+        A sample command group.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: world
+
+            A world command.
+
+        .. object:: hello
+
+            A sample command.
         """).lstrip(), '\n'.join(output))

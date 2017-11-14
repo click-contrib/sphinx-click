@@ -153,16 +153,26 @@ def _format_envvars(ctx):
 
 def _format_subcommand(command):
     """Format a sub-command of a `click.Command` or `click.Group`."""
-    yield '.. object:: {}'.format(command[0])
+    yield '.. object:: {}'.format(command.name)
 
-    if command[1].short_help:
+    if command.short_help:
         yield ''
         for line in statemachine.string2lines(
-                command[1].short_help, tab_width=4, convert_whitespace=True):
+                command.short_help, tab_width=4, convert_whitespace=True):
             yield _indent(line)
 
+def _filter_commands(ctx, commands=None):
+    """Return list of used commands."""
+    if commands is None:
+        return sorted(getattr(ctx.command, 'commands', {}).values(),
+                      key=lambda item: item.name)
+    else:
+        names = [name.strip() for name in commands.split(',')]
+        lookup = getattr(ctx.command, 'commands', {})
+        return [lookup[name] for name in names if name in lookup]
 
-def _format_command(ctx, show_nested):
+
+def _format_command(ctx, show_nested, commands=None):
     """Format the output of `click.Command`."""
 
     # description
@@ -213,7 +223,7 @@ def _format_command(ctx, show_nested):
     if show_nested:
         return
 
-    commands = sorted(getattr(ctx.command, 'commands', {}).items())
+    commands = _filter_commands(ctx, commands)
 
     if commands:
         yield '.. rubric:: Commands'
@@ -232,6 +242,7 @@ class ClickDirective(rst.Directive):
     option_spec = {
         'prog': directives.unchanged_required,
         'show-nested': directives.flag,
+        'commands': directives.unchanged,
     }
 
     def _load_module(self, module_path):
@@ -266,7 +277,7 @@ class ClickDirective(rst.Directive):
 
         return getattr(mod, attr_name)
 
-    def _generate_nodes(self, name, command, parent=None, show_nested=False):
+    def _generate_nodes(self, name, command, parent=None, show_nested=False, commands=None):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -275,6 +286,7 @@ class ClickDirective(rst.Directive):
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
         :param show_nested: Whether subcommands should be included in output
+        :param commands: Display only listed commands or skip the section if empty
         :returns: A list of nested docutil nodes
         """
         ctx = click.Context(command, info_name=name, parent=parent)
@@ -292,7 +304,7 @@ class ClickDirective(rst.Directive):
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
-        lines = _format_command(ctx, show_nested)
+        lines = _format_command(ctx, show_nested, commands)
         for line in lines:
             result.append(line, source_name)
 
@@ -301,11 +313,11 @@ class ClickDirective(rst.Directive):
         # Subcommands
 
         if show_nested:
-            commands = getattr(ctx.command, 'commands', {})
-            for command_name, command_obj in sorted(commands.items()):
+            commands = _filter_commands(ctx, commands)
+            for command in commands:
                 section.extend(self._generate_nodes(
-                    command_name,
-                    command_obj,
+                    command.name,
+                    command,
                     ctx,
                     show_nested))
 
@@ -322,8 +334,10 @@ class ClickDirective(rst.Directive):
             raise self.error(':prog: must be specified')
 
         show_nested = 'show-nested' in self.options
+        commands = self.options.get('commands')
 
-        return self._generate_nodes(prog_name, command, None, show_nested)
+        return self._generate_nodes(
+            prog_name, command, None, show_nested, commands)
 
 
 def setup(app):
