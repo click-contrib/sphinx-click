@@ -6,7 +6,6 @@ from sphinx_click import ext
 
 
 class GroupTestCase(unittest.TestCase):
-
     def test_no_parameters(self):
         """Validate a `click.Group` with no parameters.
 
@@ -22,7 +21,8 @@ class GroupTestCase(unittest.TestCase):
         ctx = click.Context(cli, info_name='cli')
         output = list(ext._format_command(ctx, show_nested=False))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
@@ -48,7 +48,8 @@ class GroupTestCase(unittest.TestCase):
         ctx = click.Context(cli, info_name='cli')
         output = list(ext._format_command(ctx, show_nested=False))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
@@ -81,10 +82,8 @@ class GroupTestCase(unittest.TestCase):
 
 
 class NestedCommandsTestCase(unittest.TestCase):
-
     @staticmethod
     def _get_ctx():
-
         @click.group()
         def cli():
             """A sample command group."""
@@ -106,7 +105,8 @@ class NestedCommandsTestCase(unittest.TestCase):
         ctx = self._get_ctx()
         output = list(ext._format_command(ctx, show_nested=False))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
@@ -130,7 +130,8 @@ class NestedCommandsTestCase(unittest.TestCase):
         ctx = self._get_ctx()
         output = list(ext._format_command(ctx, show_nested=True))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
@@ -141,10 +142,8 @@ class NestedCommandsTestCase(unittest.TestCase):
 
 
 class CommandFilterTestCase(unittest.TestCase):
-
     @staticmethod
     def _get_ctx():
-
         @click.group()
         def cli():
             """A sample command group."""
@@ -165,7 +164,8 @@ class CommandFilterTestCase(unittest.TestCase):
         ctx = self._get_ctx()
         output = list(ext._format_command(ctx, show_nested=False, commands=''))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
@@ -181,7 +181,8 @@ class CommandFilterTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False,
                                           commands='world, hello'))
 
-        self.assertEqual(textwrap.dedent("""
+        self.assertEqual(
+            textwrap.dedent("""
         A sample command group.
 
         .. program:: cli
