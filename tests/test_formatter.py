@@ -2,7 +2,6 @@ import textwrap
 import unittest
 
 import click
-
 from sphinx_click import ext
 
 
@@ -175,12 +174,12 @@ class CommandFilterTestCase(unittest.TestCase):
             cli [OPTIONS] COMMAND [ARGS]...
         """).lstrip(), '\n'.join(output))
 
-
     def test_order_of_commands(self):
         """Validate the order of commands."""
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=False, commands='world, hello'))
+        output = list(ext._format_command(ctx, show_nested=False,
+                                          commands='world, hello'))
 
         self.assertEqual(textwrap.dedent("""
         A sample command group.

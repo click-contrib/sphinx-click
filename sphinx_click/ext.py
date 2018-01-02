@@ -1,10 +1,10 @@
+import traceback
+
+import click
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
 from docutils import statemachine
-import traceback
-
-import click
 
 
 def _indent(text, level=1):
@@ -161,15 +161,16 @@ def _format_subcommand(command):
                 command.short_help, tab_width=4, convert_whitespace=True):
             yield _indent(line)
 
+
 def _filter_commands(ctx, commands=None):
     """Return list of used commands."""
     if commands is None:
         return sorted(getattr(ctx.command, 'commands', {}).values(),
                       key=lambda item: item.name)
-    else:
-        names = [name.strip() for name in commands.split(',')]
-        lookup = getattr(ctx.command, 'commands', {})
-        return [lookup[name] for name in names if name in lookup]
+
+    names = [name.strip() for name in commands.split(',')]
+    lookup = getattr(ctx.command, 'commands', {})
+    return [lookup[name] for name in names if name in lookup]
 
 
 def _format_command(ctx, show_nested, commands=None):
@@ -277,7 +278,8 @@ class ClickDirective(rst.Directive):
 
         return getattr(mod, attr_name)
 
-    def _generate_nodes(self, name, command, parent=None, show_nested=False, commands=None):
+    def _generate_nodes(self, name, command, parent=None, show_nested=False,
+                        commands=None):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -286,7 +288,8 @@ class ClickDirective(rst.Directive):
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
         :param show_nested: Whether subcommands should be included in output
-        :param commands: Display only listed commands or skip the section if empty
+        :param commands: Display only listed commands or skip the section if
+            empty
         :returns: A list of nested docutil nodes
         """
         ctx = click.Context(command, info_name=name, parent=parent)
@@ -328,11 +331,10 @@ class ClickDirective(rst.Directive):
 
         command = self._load_module(self.arguments[0])
 
-        if 'prog' in self.options:
-            prog_name = self.options.get('prog')
-        else:
+        if 'prog' not in self.options:
             raise self.error(':prog: must be specified')
 
+        prog_name = self.options.get('prog')
         show_nested = 'show-nested' in self.options
         commands = self.options.get('commands')
 
