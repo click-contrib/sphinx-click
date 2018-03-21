@@ -66,11 +66,12 @@ def _format_description(ctx):
     We parse this as reStructuredText, allowing users to embed rich
     information in their help messages if they so choose.
     """
-    if not ctx.command.help:
+    help_string = ctx.command.help or ctx.command.short_help
+    if not help_string:
         return
 
     for line in statemachine.string2lines(
-            ctx.command.help, tab_width=4, convert_whitespace=True):
+            help_string, tab_width=4, convert_whitespace=True):
         yield line
     yield ''
 
