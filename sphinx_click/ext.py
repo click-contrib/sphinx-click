@@ -165,21 +165,29 @@ def _format_subcommand(command):
             yield _indent(line)
 
 
+def _get_lazyload_commands(multicommand):
+    commands = {}
+    for command in multicommand.list_commands(multicommand):
+        commands[command] = multicommand.get_command(multicommand, command)
+
+    return commands
+
+
 def _filter_commands(ctx, commands=None):
     """Return list of used commands."""
+    lookup = getattr(ctx.command, 'commands', {})
+    if not lookup and isinstance(ctx.command, click.MultiCommand):
+        lookup = _get_lazyload_commands(ctx.command)
+
     if commands is None:
-        return sorted(
-            getattr(ctx.command, 'commands', {}).values(),
-            key=lambda item: item.name)
+        return sorted(lookup.values(), key=lambda item: item.name)
 
     names = [name.strip() for name in commands.split(',')]
-    lookup = getattr(ctx.command, 'commands', {})
     return [lookup[name] for name in names if name in lookup]
 
 
 def _format_command(ctx, show_nested, commands=None):
     """Format the output of `click.Command`."""
-
     # description
 
     for line in _format_description(ctx):
@@ -252,7 +260,6 @@ class ClickDirective(rst.Directive):
 
     def _load_module(self, module_path):
         """Load the module."""
-
         # __import__ will fail on unicode,
         # so we ensure module path is a string here.
         module_path = str(module_path)
