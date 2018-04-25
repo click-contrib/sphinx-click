@@ -167,8 +167,8 @@ def _format_subcommand(command):
 
 def _get_lazyload_commands(multicommand):
     commands = {}
-    for command in multicommand.list_commands():
-        commands[command] = multicommand.get_command(command)
+    for command in multicommand.list_commands(multicommand):
+        commands[command] = multicommand.get_command(multicommand, command)
 
     return commands
 
