@@ -200,3 +200,55 @@ class CommandFilterTestCase(unittest.TestCase):
 
             A sample command.
         """).lstrip(), '\n'.join(output))
+
+
+class CustomMultCommandTestCase(unittest.TestCase):
+    def test_basics(self):
+        """Validate a custom ``click.MultiCommand`` with no parameters.
+
+        This exercises the code paths to extract commands correctly from these
+        commands.
+        """
+
+        @click.command()
+        def hello():
+            """A sample command."""
+
+        @click.command()
+        def world():
+            """A world command."""
+
+        class MyCLI(click.MultiCommand):
+            _command_mapping = {
+                'hello': hello,
+                'world': world,
+            }
+            def list_commands(self, ctx):
+                return ['hello', 'world']
+
+            def get_command(self, ctx, name):
+                return self._command_mapping[name]
+
+        cli = MyCLI(help='A sample custom multicommand.')
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample custom multicommand.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: hello
+
+            A sample command.
+
+        .. object:: world
+
+            A world command.
+        """).lstrip(), '\n'.join(output))
