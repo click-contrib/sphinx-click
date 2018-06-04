@@ -140,6 +140,7 @@ def _format_arguments(ctx):
 def _format_envvar(param):
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
+    yield '   :noindex:'
     yield ''
     if isinstance(param, click.Argument):
         param_ref = param.human_readable_name
@@ -156,6 +157,12 @@ def _format_envvars(ctx):
     params = [x for x in ctx.command.params if getattr(x, 'envvar')]
 
     for param in params:
+        yield '.. _{command_name}-{param_name}-{envvar}:'.format(
+            command_name=ctx.command.name,
+            param_name=param.name,
+            envvar=param.envvar,
+        )
+        yield ''
         for line in _format_envvar(param):
             yield line
         yield ''
