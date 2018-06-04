@@ -71,11 +71,17 @@ class GroupTestCase(unittest.TestCase):
 
         .. rubric:: Environment variables
 
+        .. _cli-param-PARAM:
+
         .. envvar:: PARAM
+           :noindex:
 
             Provide a default for :option:`--param`
 
+        .. _cli-arg-ARG:
+
         .. envvar:: ARG
+           :noindex:
 
             Provide a default for :option:`ARG`
         """).lstrip(), '\n'.join(output))
