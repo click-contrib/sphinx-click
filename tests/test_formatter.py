@@ -202,7 +202,7 @@ class CommandFilterTestCase(unittest.TestCase):
         """).lstrip(), '\n'.join(output))
 
 
-class CustomMultCommandTestCase(unittest.TestCase):
+class CustomMultiCommandTestCase(unittest.TestCase):
     def test_basics(self):
         """Validate a custom ``click.MultiCommand`` with no parameters.
 

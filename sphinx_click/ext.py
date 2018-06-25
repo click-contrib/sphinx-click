@@ -48,10 +48,10 @@ def _get_help_record(opt):
     help = opt.help or ''
     extra = []
     if opt.default is not None and opt.show_default:
-        extra.append('default: %s' %
-                     (', '.join('%s' % d for d in opt.default)
-                      if isinstance(opt.default,
-                                    (list, tuple)) else opt.default, ))
+        extra.append(
+            'default: %s' % (', '.join('%s' % d for d in opt.default)
+                             if isinstance(opt.default,
+                                           (list, tuple)) else opt.default, ))
     if opt.required:
         extra.append('required')
     if extra:
@@ -115,9 +115,9 @@ def _format_argument(arg):
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
-    yield _indent('{} argument{}'.format('Required'
-                                         if arg.required else 'Optional', '(s)'
-                                         if arg.nargs != 1 else ''))
+    yield _indent('{} argument{}'.format(
+        'Required' if arg.required else 'Optional', '(s)'
+        if arg.nargs != 1 else ''))
 
 
 def _format_arguments(ctx):
