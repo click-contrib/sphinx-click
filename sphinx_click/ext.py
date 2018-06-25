@@ -287,7 +287,13 @@ class ClickDirective(rst.Directive):
             raise self.error('Module "{}" has no attribute "{}"'.format(
                 module_name, attr_name))
 
-        return getattr(mod, attr_name)
+        parser = getattr(mod, attr_name)
+
+        if not isinstance(parser, click.BaseCommand):
+            raise self.error('"{}" of type "{}" is not derived from '
+                             '"click.BaseCommand"'.format(
+                                 type(parser), module_path))
+        return parser
 
     def _generate_nodes(self,
                         name,
