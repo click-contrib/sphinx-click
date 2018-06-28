@@ -14,3 +14,20 @@ script:
 - tox
 after_success:
 - codecov
+stages:
+- test
+- deploy
+jobs:
+  include:
+    - stage: deploy
+      python: 3.6
+      install: skip  # no tests, no depedencies needed
+      script: skip  # we're not running tests
+      deploy:
+        provider: pypi
+        user: stephenfin
+        password:
+          secure: QC2uv/IrJXZH3IpLxXhypCzhzsQR3tMoE1m07Q/mt5tNxZrNlO/wro4LPRXih/XwHnz+qz9QaejRsI2RgDmEuGqqLcH5iEFCgnC3cNd3y5T7RU6CJTwb0+DEQQIX/p7DRKaXsfb3OOaoNYvo2/FQRF7th2ClkbKJbjIvXlrnmHW6e/nvcXvrxJuIH0x3jE2ou38TSCtVDNfRUomxCRvWP0yqg416d7Ulv3ksI8qKPx6HwcKX7KWFyPOX0vbDnOGlnPxHCetAEtwJ8enoNQSK1+CKkTDSChUqH7fspUz5/f1yzqp+CU9R8ukRmI3ZpfRgKDkLkLPKAH97B+1g43ioS6EKtObN1kSZkqc0nxtqjVBVr2r3wZmX+RZC71VqzW595QAl6H/89zH1tj71eNcOd+X+y5TGoE/Ie+T5TgC7ktZdMb5LHcz4RYP945F+L7w3RSXRY7is3zMsG4yyF9EaHdZs6dpJVKDgY2ZRbMG4mLaH01f4k7GsUm6SthgfPIhITvpBR9UpIgWNFhQ5bLQFd6hBKg8h3/Qci3Nj1+Ai8fX1bp3Uvb6wKBpBXCFLkwX2oiF8MDSmYXN0HzT8hEDBCXMTloF8IKtDm2sPkwTnPut97MHmp9lQyUvsgCkUvA+a1kf8bmDomlccdWxHYXXX6+i5on1YidhyPgFzwvd8VQI=
+        on:
+          tags: true
+        distributions: sdist bdist_wheel
