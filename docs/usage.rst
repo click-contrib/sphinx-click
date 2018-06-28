@@ -1,12 +1,12 @@
 Usage
 =====
 
-`sphinx-click` enables automatic documentation by way of a `Sphinx
-directive`__.
+*sphinx-click* enables automatic documentation for `click-based`_ applications
+by way of a `Sphinx directive`_.
 
 .. rst:directive:: .. click:: module:parser
 
-   Automatically extract documentation from a `click-based`__ application and
+   Automatically extract documentation from a `click-based`_ application and
    include it in your docs.
 
    .. code-block:: rst
@@ -15,31 +15,34 @@ directive`__.
           :prog: hello-world
           :show-nested:
 
-   The directive takes the import name of the parser object as its sole
-   argument.
+   The directive takes the import name of a *click* object as its sole
+   argument. This should be a subclass of |click.core.BaseCommand|_, such as
+   ``click.Command``, ``click.Group``, ``click.MultiCommand``, etc.
 
    In addition, the following options are required:
 
-   `:prog:`
+   ``:prog:``
      The name of your tool (or how it should appear in your documentation). For
      example, if you run your script as ``./boo --opts args`` then ``:prog:``
      will be ``boo``. If this is not given, the module name is used.
 
    The following options are optional:
 
-   `:show-nested:`
+   ``:show-nested:``
      Enable full documentation for sub-commands.
 
-   `:commands:`
+   ``:commands:``
      Document only listed commands.
 
-__ http://www.sphinx-doc.org/en/stable/extdev/markupapi.html
-__ http://click.pocoo.org/
+.. _Sphinx directive: http://www.sphinx-doc.org/en/stable/extdev/markupapi.html
+.. _click-based: http://click.pocoo.org/6/
+.. |click.core.BaseCommand| replace:: ``click.core.BaseCommand``
+.. _click.core.BaseCommand: http://click.pocoo.org/6/api/#click.BaseCommand
 
 Example
 -------
 
-Take the below `click` application, which is defined in the `example_app`
+Take the below ``click`` application, which is defined in the ``hello_world``
 module:
 
 .. code-block:: python
