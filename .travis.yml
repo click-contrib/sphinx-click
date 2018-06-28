@@ -1,19 +1,14 @@
 language: python
-
 sudo: false
-
 python:
-  - 2.7
-  - 3.4
-  - 3.5
-  - 3.6
-
+- 2.7
+- 3.4
+- 3.5
+- 3.6
 install:
-  - pip install tox-travis
-  - pip install codecov
-
+- pip install tox-travis
+- pip install codecov
 script:
-  - tox
-
+- tox
 after_success:
-  - codecov
+- codecov
