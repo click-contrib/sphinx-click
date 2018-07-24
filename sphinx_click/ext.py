@@ -249,7 +249,6 @@ def _format_command(ctx, show_nested, commands=None):
 
 
 class ClickDirective(rst.Directive):
-
     has_content = False
     required_arguments = 1
     option_spec = {
@@ -360,6 +359,108 @@ class ClickDirective(rst.Directive):
         return self._generate_nodes(prog_name, command, None, show_nested,
                                     commands)
 
+class ClickSubcommandTableDirective(rst.Directive):
+    has_content = False
+    required_arguments = 1
+    option_spec = {
+        'prog': directives.unchanged_required,
+        'subcommands': directives.unchanged,
+        'column_names': directives.unchanged,
+    }
+
+    def _load_module(self, module_path):
+        """Load the module."""
+        # __import__ will fail on unicode,
+        # so we ensure module path is a string here.
+        module_path = str(module_path)
+
+        try:
+            module_name, attr_name = module_path.split(':', 1)
+        except ValueError:  # noqa
+            raise self.error(
+                '"{}" is not of format "module:parser"'.format(module_path))
+
+        try:
+            mod = __import__(module_name, globals(), locals(), [attr_name])
+        except (Exception, SystemExit) as exc:  # noqa
+            err_msg = 'Failed to import "{}" from "{}". '.format(
+                attr_name, module_name)
+            if isinstance(exc, SystemExit):
+                err_msg += 'The module appeared to call sys.exit()'
+            else:
+                err_msg += 'The following exception was raised:\n{}'.format(
+                    traceback.format_exc())
+
+            raise self.error(err_msg)
+
+        if not hasattr(mod, attr_name):
+            raise self.error('Module "{}" has no attribute "{}"'.format(
+                module_name, attr_name))
+
+        parser = getattr(mod, attr_name)
+
+        if not isinstance(parser, click.BaseCommand):
+            raise self.error('"{}" of type "{}" is not derived from '
+                             '"click.BaseCommand"'.format(
+                                 type(parser), module_path))
+        return parser
+
+    def _create_table_row(self, row_cells):
+        row = nodes.row()
+        for cell in row_cells:
+            entry = nodes.entry()
+            row += entry
+            entry += nodes.paragraph(text=cell)
+        return row
+
+    def run(self):
+        """Generate a table summary of subcommands of a click group. 
+
+        :param name: Name of group, as used on the command line
+        :param subcommands: Display only listed subcommands or skip the section if
+            empty
+        :param column_names: The 
+        :returns: A list with a docutil node, representing the resulting table.
+        """
+        self.env = self.state.document.settings.env
+
+        command = self._load_module(self.arguments[0])
+
+        if 'prog' not in self.options:
+            raise self.error(':prog: must be specified')
+
+        prog_name = self.options.get('prog')
+        column_names = self.options.get(
+            'column_names', 'Subcommand, Description')
+        column_names = [s.strip() for s in column_names.split(',')]
+        subcommands = self.options.get('subcommands')
+
+        ctx = click.Context(command, info_name=prog_name)
+
+        colwidths = [1, 2]
+
+        table = nodes.table()
+
+        tgroup = nodes.tgroup(cols=len(column_names))
+        table += tgroup
+        for colwidth in colwidths:
+            tgroup += nodes.colspec(colwidth=colwidth)
+
+        thead = nodes.thead()
+        tgroup += thead
+        thead += self._create_table_row(column_names)
+
+        tbody = nodes.tbody()
+        tgroup += tbody
+
+        subcommands = _filter_commands(ctx, subcommands)
+        for subcommand in subcommands:
+            tbody += self._create_table_row(
+                (subcommand.name, subcommand.short_help))
+
+        return [table]
+
 
 def setup(app):
     app.add_directive('click', ClickDirective)
+    app.add_directive('click_subcommand_table', ClickSubcommandTableDirective)
