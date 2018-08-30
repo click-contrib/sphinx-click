@@ -34,8 +34,13 @@ by way of a `Sphinx directive`_.
    ``:commands:``
      Document only listed commands.
 
+   The generated documentation includes anchors for the generated commands,
+   their options and their environment variables using the `Sphinx standard
+   domain`_.
+
 .. _Sphinx directive: http://www.sphinx-doc.org/en/stable/extdev/markupapi.html
 .. _click-based: http://click.pocoo.org/6/
+.. _Sphinx standard domain: http://www.sphinx-doc.org/en/stable/domains.html#the-standard-domain
 .. |click.core.BaseCommand| replace:: ``click.core.BaseCommand``
 .. _click.core.BaseCommand: http://click.pocoo.org/6/api/#click.BaseCommand
 
@@ -55,13 +60,13 @@ module:
         pass
 
     @greet.command()
-    @click.argument('user')
+    @click.argument('user', envvar='USER')
     def hello(user):
         """Greet a user."""
         click.echo('Hello %s' % user)
 
     @greet.command()
-    def world(user):
+    def world():
         """Greet the world."""
         click.echo('Hello world!')
 
@@ -89,6 +94,24 @@ You can also document only selected commands by using ``:commands:`` option.
     .. click:: hello_world:greet
       :prog: hello-world
       :commands: hello
+
+You can cross-reference the commands, option and environment variables using
+the roles provided by the `Sphinx standard domain`_.
+
+.. code-block:: rst
+
+    .. click:: hello_world:greet
+       :prog: hello-world
+
+    The :program:`hello` command accepts a :option:`user` argument. If this is
+    not provided, the :envvar:`USER` environment variable will be used.
+
+.. note::
+
+    Cross-referencing using the ``:program:`` directive is not currently
+    supported by Sphinx. Refer to the `Sphinx issue`__ for more information.
+
+    __ https://github.com/sphinx-doc/sphinx/issues/880
 
 Modifying ``sys.path``
 ----------------------
