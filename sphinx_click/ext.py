@@ -70,8 +70,15 @@ def _format_description(ctx):
     if not help_string:
         return
 
+    bar_enabled = False
     for line in statemachine.string2lines(
             help_string, tab_width=4, convert_whitespace=True):
+        if line == '\b':
+            bar_enabled = True
+            continue
+        if line == '':
+            bar_enabled = False
+        line = '| ' + line if bar_enabled else line
         yield line
     yield ''
 
