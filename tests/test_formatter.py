@@ -80,6 +80,46 @@ class GroupTestCase(unittest.TestCase):
             Provide a default for :option:`ARG`
         """).lstrip(), '\n'.join(output))
 
+    def test_no_line_wrapping(self):
+        r"""Validate behavior when a \b character is present.
+
+        https://click.palletsprojects.com/en/7.x/documentation/#preventing-rewrapping
+        """
+
+        @click.group()
+        def cli():
+            """A sample command group.
+
+            \b
+            This is
+            a paragraph
+            without rewrapping.
+
+            And this is a paragraph
+            that will be rewrapped again.
+            """
+            pass
+
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample command group.
+
+        | This is
+        | a paragraph
+        | without rewrapping.
+
+        And this is a paragraph
+        that will be rewrapped again.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+        """).lstrip(), '\n'.join(output))
+
 
 class NestedCommandsTestCase(unittest.TestCase):
     @staticmethod
@@ -223,6 +263,7 @@ class CustomMultiCommandTestCase(unittest.TestCase):
                 'hello': hello,
                 'world': world,
             }
+
             def list_commands(self, ctx):
                 return ['hello', 'world']
 
