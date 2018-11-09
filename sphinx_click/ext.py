@@ -4,6 +4,9 @@ import click
 from docutils import nodes, statemachine
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
+from sphinx.util import logging
+
+LOG = logging.getLogger(__name__)
 
 
 def _indent(text, level=1):
@@ -344,6 +347,7 @@ class ClickDirective(rst.Directive):
 
         lines = _format_command(ctx, show_nested, commands)
         for line in lines:
+            LOG.debug(line)
             result.append(line, source_name)
 
         self.state.nested_parse(result, 0, section)
