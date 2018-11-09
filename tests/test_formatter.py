@@ -168,7 +168,7 @@ class NestedCommandsTestCase(unittest.TestCase):
         """).lstrip(), '\n'.join(output))
 
     def test_show_nested(self):
-        """Validate a nested command without show_nested.
+        """Validate a nested command with show_nested.
 
         If we're not showing sub-commands separately, we should not list them.
         """

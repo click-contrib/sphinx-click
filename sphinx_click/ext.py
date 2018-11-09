@@ -161,7 +161,7 @@ def _format_envvars(ctx):
 
     for param in params:
         yield '.. _{command_name}-{param_name}-{envvar}:'.format(
-            command_name=ctx.command.name,
+            command_name=ctx.command_path.replace(' ', '-'),
             param_name=param.name,
             envvar=param.envvar,
         )
