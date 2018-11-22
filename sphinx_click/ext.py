@@ -4,6 +4,9 @@ import click
 from docutils import nodes, statemachine
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
+from sphinx.util import logging
+
+LOG = logging.getLogger(__name__)
 
 
 def _indent(text, level=1):
@@ -70,8 +73,15 @@ def _format_description(ctx):
     if not help_string:
         return
 
+    bar_enabled = False
     for line in statemachine.string2lines(
             help_string, tab_width=4, convert_whitespace=True):
+        if line == '\b':
+            bar_enabled = True
+            continue
+        if line == '':
+            bar_enabled = False
+        line = '| ' + line if bar_enabled else line
         yield line
     yield ''
 
@@ -133,6 +143,7 @@ def _format_arguments(ctx):
 def _format_envvar(param):
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
+    yield '   :noindex:'
     yield ''
     if isinstance(param, click.Argument):
         param_ref = param.human_readable_name
@@ -149,6 +160,12 @@ def _format_envvars(ctx):
     params = [x for x in ctx.command.params if getattr(x, 'envvar')]
 
     for param in params:
+        yield '.. _{command_name}-{param_name}-{envvar}:'.format(
+            command_name=ctx.command_path.replace(' ', '-'),
+            param_name=param.name,
+            envvar=param.envvar,
+        )
+        yield ''
         for line in _format_envvar(param):
             yield line
         yield ''
@@ -329,6 +346,7 @@ class ClickDirective(rst.Directive):
 
         lines = _format_command(ctx, show_nested, commands)
         for line in lines:
+            LOG.debug(line)
             result.append(line, source_name)
 
         self.state.nested_parse(result, 0, section)

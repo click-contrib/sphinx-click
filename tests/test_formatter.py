@@ -71,13 +71,59 @@ class GroupTestCase(unittest.TestCase):
 
         .. rubric:: Environment variables
 
+        .. _cli-param-PARAM:
+
         .. envvar:: PARAM
+           :noindex:
 
             Provide a default for :option:`--param`
 
+        .. _cli-arg-ARG:
+
         .. envvar:: ARG
+           :noindex:
 
             Provide a default for :option:`ARG`
+        """).lstrip(), '\n'.join(output))
+
+    def test_no_line_wrapping(self):
+        r"""Validate behavior when a \b character is present.
+
+        https://click.palletsprojects.com/en/7.x/documentation/#preventing-rewrapping
+        """
+
+        @click.group()
+        def cli():
+            """A sample command group.
+
+            \b
+            This is
+            a paragraph
+            without rewrapping.
+
+            And this is a paragraph
+            that will be rewrapped again.
+            """
+            pass
+
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample command group.
+
+        | This is
+        | a paragraph
+        | without rewrapping.
+
+        And this is a paragraph
+        that will be rewrapped again.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
         """).lstrip(), '\n'.join(output))
 
 
@@ -122,7 +168,7 @@ class NestedCommandsTestCase(unittest.TestCase):
         """).lstrip(), '\n'.join(output))
 
     def test_show_nested(self):
-        """Validate a nested command without show_nested.
+        """Validate a nested command with show_nested.
 
         If we're not showing sub-commands separately, we should not list them.
         """
@@ -223,6 +269,7 @@ class CustomMultiCommandTestCase(unittest.TestCase):
                 'hello': hello,
                 'world': world,
             }
+
             def list_commands(self, ctx):
                 return ['hello', 'world']
 
