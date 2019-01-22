@@ -7,6 +7,7 @@ from docutils.parsers.rst import directives
 from sphinx.util import logging
 
 LOG = logging.getLogger(__name__)
+CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.'))
 
 
 def _indent(text, level=1):
@@ -175,10 +176,16 @@ def _format_subcommand(command):
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
-    if command.short_help:
+    # click 7.0 stopped setting short_help by default
+    if CLICK_VERSION < (7, 0):
+        short_help = command.short_help
+    else:
+        short_help = command.get_short_help_str()
+
+    if short_help:
         yield ''
         for line in statemachine.string2lines(
-                command.short_help, tab_width=4, convert_whitespace=True):
+                short_help, tab_width=4, convert_whitespace=True):
             yield _indent(line)
 
 
