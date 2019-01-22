@@ -127,8 +127,8 @@ def _format_argument(arg):
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
     yield _indent('{} argument{}'.format(
-        'Required' if arg.required else 'Optional', '(s)'
-        if arg.nargs != 1 else ''))
+        'Required' if arg.required else 'Optional',
+        '(s)' if arg.nargs != 1 else ''))
 
 
 def _format_arguments(ctx):
