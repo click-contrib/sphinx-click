@@ -4,6 +4,11 @@ sphinx-click
 
 .. image:: https://travis-ci.org/click-contrib/sphinx-click.svg?branch=master
     :target: https://travis-ci.org/click-contrib/sphinx-click
+    :alt: CI Status
+
+.. image:: https://readthedocs.org/projects/sphinx-click/badge/?version=latest
+    :target: https://sphinx-click.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 `sphinx-click` is a `Sphinx`__ plugin that allows you to automatically extract
 documentation from a `click-based`__ application and include it in your docs.
