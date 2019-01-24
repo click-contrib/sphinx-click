@@ -396,3 +396,58 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 
             A world command.
         """).lstrip(), '\n'.join(output))
+
+
+    @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
+                     'The hidden flag was added in Click 7.0')
+    def test_hidden(self):
+        """Ensure 'hidden' subcommands are not shown."""
+        @click.command()
+        def hello():
+            """A sample command."""
+
+        @click.command()
+        def world():
+            """A world command."""
+
+        @click.command(hidden=True)
+        def hidden():
+            """A hidden command."""
+
+        class MyCLI(click.MultiCommand):
+            _command_mapping = {
+                'hello': hello,
+                'world': world,
+                'hidden': hidden,
+            }
+
+            def list_commands(self, ctx):
+                return ['hello', 'world', 'hidden']
+
+            def get_command(self, ctx, name):
+                return self._command_mapping[name]
+
+        cli = MyCLI(help='A sample custom multicommand.')
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        # Note that we do NOT expect this to show the 'hidden' command
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample custom multicommand.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: hello
+
+            A sample command.
+
+        .. object:: world
+
+            A world command.
+        """).lstrip(), '\n'.join(output))

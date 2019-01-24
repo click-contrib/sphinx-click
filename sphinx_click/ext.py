@@ -271,6 +271,11 @@ def _format_command(ctx, show_nested, commands=None):
         yield ''
 
     for command in commands:
+        # Don't show hidden subcommands
+        if CLICK_VERSION >= (7, 0):
+            if command.hidden:
+                continue
+
         for line in _format_subcommand(command):
             yield line
         yield ''
