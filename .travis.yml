@@ -1,12 +1,12 @@
 language: python
-sudo: false
+dist: xenial
 cache: pip
 python:
 - 2.7
 - 3.4
 - 3.5
 - 3.6
-- pypy
+- 3.7
 install:
 - pip install tox-travis
 - pip install codecov
@@ -19,6 +19,9 @@ stages:
 - deploy
 jobs:
   include:
+  - stage: test
+    python: pypy
+    dist: trusty
   - stage: deploy
     python: 3.6
     install: skip  # no tests, no depedencies needed
