@@ -40,6 +40,7 @@ class CommandTestCase(unittest.TestCase):
 
         @click.command()
         @click.option('--param', envvar='PARAM', help='A sample option')
+        @click.option('--choice', help='A sample option with choices', type=click.Choice(['Option1', 'Option2']))
         @click.argument('ARG', envvar='ARG')
         def foobar(bar):
             """A sample command."""
@@ -62,6 +63,10 @@ class CommandTestCase(unittest.TestCase):
         .. option:: --param <param>
 
             A sample option
+
+        .. option:: --choice <choice>
+
+            A sample option with choices    Options: <Option1, Option2>
 
         .. rubric:: Arguments
 
