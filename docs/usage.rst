@@ -1,6 +1,12 @@
 Usage
 =====
 
+Enable the plugin in your Sphinx `conf.py` file:
+
+.. code-block:: python
+
+   extensions = ['sphinx_click.ext']
+
 *sphinx-click* enables automatic documentation for `click-based`_ applications
 by way of a `Sphinx directive`_.
 
