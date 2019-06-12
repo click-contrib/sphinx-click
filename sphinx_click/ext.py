@@ -60,6 +60,11 @@ def _get_help_record(opt):
         extra.append('required')
     if extra:
         help = '%s[%s]' % (help and help + '  ' or '', '; '.join(extra))
+    if isinstance(opt.type, click.Choice):
+        help = "%s  Options: <%s>" % (
+            help and help + "  " or "",
+            ", ".join(opt.type.choices),
+        )
 
     return ', '.join(rv), help
 
