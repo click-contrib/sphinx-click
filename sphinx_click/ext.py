@@ -61,9 +61,9 @@ def _get_help_record(opt):
     if extra:
         help = '%s[%s]' % (help and help + '  ' or '', '; '.join(extra))
     if isinstance(opt.type, click.Choice):
-        help = "%s  Options: <%s>" % (
+        help = "%s\n\n:options: %s" % (
             help and help + "  " or "",
-            ", ".join(opt.type.choices),
+            "|".join(opt.type.choices),
         )
 
     return ', '.join(rv), help
