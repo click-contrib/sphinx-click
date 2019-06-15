@@ -52,10 +52,9 @@ def _get_help_record(opt):
     help = opt.help or ''
     extra = []
     if opt.default is not None and opt.show_default:
-        extra.append(
-            'default: %s' % (', '.join('%s' % d for d in opt.default)
-                             if isinstance(opt.default,
-                                           (list, tuple)) else opt.default, ))
+        extra.append('default: %s' %
+                     (', '.join('%s' % d for d in opt.default) if isinstance(
+                         opt.default, (list, tuple)) else opt.default, ))
     if opt.required:
         extra.append('required')
     if extra:
@@ -80,8 +79,9 @@ def _format_description(ctx):
         return
 
     bar_enabled = False
-    for line in statemachine.string2lines(
-            help_string, tab_width=4, convert_whitespace=True):
+    for line in statemachine.string2lines(help_string,
+                                          tab_width=4,
+                                          convert_whitespace=True):
         if line == '\b':
             bar_enabled = True
             continue
@@ -108,8 +108,9 @@ def _format_option(opt):
     yield '.. option:: {}'.format(opt[0])
     if opt[1]:
         yield ''
-        for line in statemachine.string2lines(
-                opt[1], tab_width=4, convert_whitespace=True):
+        for line in statemachine.string2lines(opt[1],
+                                              tab_width=4,
+                                              convert_whitespace=True):
             yield _indent(line)
 
 
@@ -189,8 +190,9 @@ def _format_subcommand(command):
 
     if short_help:
         yield ''
-        for line in statemachine.string2lines(
-                short_help, tab_width=4, convert_whitespace=True):
+        for line in statemachine.string2lines(short_help,
+                                              tab_width=4,
+                                              convert_whitespace=True):
             yield _indent(line)
 
 

@@ -40,7 +40,8 @@ class CommandTestCase(unittest.TestCase):
 
         @click.command()
         @click.option('--param', envvar='PARAM', help='A sample option')
-        @click.option('--choice', help='A sample option with choices', type=click.Choice(['Option1', 'Option2']))
+        @click.option('--choice', help='A sample option with choices',
+                      type=click.Choice(['Option1', 'Option2']))
         @click.argument('ARG', envvar='ARG')
         def foobar(bar):
             """A sample command."""
@@ -403,7 +404,6 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 
             A world command.
         """).lstrip(), '\n'.join(output))
-
 
     @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
                      'The hidden flag was added in Click 7.0')
