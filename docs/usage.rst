@@ -1,8 +1,15 @@
 Usage
 =====
 
-*sphinx-click* enables automatic documentation for `click-based`_ applications
-by way of a `Sphinx directive`_.
+To enable the plugin, add the extension to the list of extensions in your
+Sphinx `conf.py` file:
+
+.. code-block:: python
+
+   extensions = ['sphinx_click.ext']
+
+Once enabled, *sphinx-click* enables automatic documentation for
+`click-based`_ applications by way of a `Sphinx directive`_.
 
 .. rst:directive:: .. click:: module:parser
 
