@@ -354,6 +354,9 @@ class ClickDirective(rst.Directive):
         """
         ctx = click.Context(command, info_name=name, parent=parent)
 
+        if CLICK_VERSION >= (7, 0) and command.hidden:
+            return []
+
         # Title
 
         section = nodes.section(
