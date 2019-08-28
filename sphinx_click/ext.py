@@ -7,7 +7,7 @@ from docutils.parsers.rst import directives
 from sphinx.util import logging
 
 LOG = logging.getLogger(__name__)
-CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.'))
+CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
 
 
 def _indent(text, level=1):
