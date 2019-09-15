@@ -218,8 +218,7 @@ def _filter_commands(ctx, commands=None):
 
 def _format_command(ctx, show_nested, commands=None):
     """Format the output of `click.Command`."""
-    # the hidden attribute is part of click 7.x only hence use of getattr
-    if getattr(ctx.command, 'hidden', False):
+    if CLICK_VERSION >= (7, 0) and ctx.command.hidden:
         return
 
     # description
@@ -278,9 +277,8 @@ def _format_command(ctx, show_nested, commands=None):
 
     for command in commands:
         # Don't show hidden subcommands
-        if CLICK_VERSION >= (7, 0):
-            if command.hidden:
-                continue
+        if CLICK_VERSION >= (7, 0) and command.hidden:
+            continue
 
         for line in _format_subcommand(command):
             yield line
