@@ -38,7 +38,6 @@ def _get_help_record(opt):
 
     [1] http://www.sphinx-doc.org/en/stable/domains.html#directive-option
     """
-
     def _write_opts(opts):
         rv, _ = click.formatting.join_options(opts)
         if not opt.is_flag and not opt.count:
