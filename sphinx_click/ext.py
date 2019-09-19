@@ -55,7 +55,7 @@ def _get_help_record(opt):
             # Starting from Click 7.0 this can be a string as well. This is
             # mostly useful when the default is not a constant and
             # documentation thus needs a manually written string.
-            extra.append('default: %s' % opt.show_default,)
+            extra.append('default: %s' % opt.show_default)
         else:
             extra.append('default: %s' %
                          (', '.join('%s' % d for d in opt.default) if isinstance(
