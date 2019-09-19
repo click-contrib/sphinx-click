@@ -95,6 +95,42 @@ class CommandTestCase(unittest.TestCase):
         """).lstrip(), '\n'.join(output))
 
     @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
+                     'Allowing show_default to be a string was added in Click 7.0')
+    def test_defaults(self):
+        """Validate formatting of user documented defaults.
+        """
+
+        @click.command()
+        @click.option('--num-param', type=int, default=42, show_default=True)
+        @click.option('--param', default=lambda: None, show_default='Something computed at runtime')
+        def foobar(bar):
+            """A sample command."""
+            pass
+
+        ctx = click.Context(foobar, info_name='foobar')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample command.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --num-param <num_param>
+
+            [default: 42]
+
+        .. option:: --param <param>
+
+            [default: Something computed at runtime]
+        """).lstrip(), '\n'.join(output))
+
+    @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
                      'The hidden flag was added in Click 7.0')
     def test_hidden(self):
         """Validate a `click.Command` with the `hidden` flag."""

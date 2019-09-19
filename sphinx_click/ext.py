@@ -51,8 +51,11 @@ def _get_help_record(opt):
     help = opt.help or ''
     extra = []
     if opt.default is not None and opt.show_default:
-        extra.append('default: %s' %
-                     (', '.join('%s' % d for d in opt.default) if isinstance(
+        if isinstance(opt.show_default, str):
+            extra.append('default: %s' % opt.show_default,)
+        else:
+            extra.append('default: %s' %
+                         (', '.join('%s' % d for d in opt.default) if isinstance(
                          opt.default, (list, tuple)) else opt.default, ))
     if opt.required:
         extra.append('required')
