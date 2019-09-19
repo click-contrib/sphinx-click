@@ -52,6 +52,9 @@ def _get_help_record(opt):
     extra = []
     if opt.default is not None and opt.show_default:
         if isinstance(opt.show_default, str):
+            # Starting from Click 7.0 this can be a string as well. This is
+            # mostly useful when the default is not a constant and
+            # documentation thus needs a manually written string.
             extra.append('default: %s' % opt.show_default,)
         else:
             extra.append('default: %s' %
