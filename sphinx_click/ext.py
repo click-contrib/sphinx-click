@@ -20,6 +20,11 @@ def _indent(text, level=1):
     return ''.join(prefixed_lines())
 
 
+def _escape(text):
+    text = text.replace('`', '\\`')
+    return text
+
+
 def _get_usage(ctx):
     """Alternative, non-prefixed version of 'get_usage'."""
     formatter = ctx.make_formatter()
@@ -102,7 +107,7 @@ def _format_usage(ctx):
     yield '.. code-block:: shell'
     yield ''
     for line in _get_usage(ctx).splitlines():
-        yield _indent(line)
+        yield _indent(_escape(line))
     yield ''
 
 
@@ -116,7 +121,7 @@ def _format_option(opt):
         for line in statemachine.string2lines(opt[1],
                                               tab_width=4,
                                               convert_whitespace=True):
-            yield _indent(line)
+            yield _indent(_escape(line))
 
 
 def _format_options(ctx):
