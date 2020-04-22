@@ -298,6 +298,7 @@ class ClickDirective(rst.Directive):
     option_spec = {
         'prog': directives.unchanged_required,
         'show-nested': directives.flag,
+        'flat-toctree': directives.flag,
         'commands': directives.unchanged,
     }
 
@@ -343,6 +344,7 @@ class ClickDirective(rst.Directive):
                         command,
                         parent=None,
                         show_nested=False,
+                        flat_toctree=False,
                         commands=None):
         """Generate the relevant Sphinx nodes.
 
@@ -352,6 +354,8 @@ class ClickDirective(rst.Directive):
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
         :param show_nested: Whether subcommands should be included in output
+        :param flat_toctree: Whether a flat toctree is generated for
+            subcommands (instead of a hierarchical one)
         :param commands: Display only listed commands or skip the section if
             empty
         :returns: A list of nested docutil nodes
@@ -383,14 +387,19 @@ class ClickDirective(rst.Directive):
 
         # Subcommands
 
+        section_list = [section]
         if show_nested:
             commands = _filter_commands(ctx, commands)
             for command in commands:
-                section.extend(
-                    self._generate_nodes(command.name, command, ctx,
-                                         show_nested))
+                new_section = self._generate_nodes(command.name, command, ctx,
+                                                   show_nested, flat_toctree)
 
-        return [section]
+                if flat_toctree:
+                    section_list.extend(new_section)
+                else:
+                    section.extend(new_section)
+
+        return section_list
 
     def run(self):
         self.env = self.state.document.settings.env
@@ -402,10 +411,11 @@ class ClickDirective(rst.Directive):
 
         prog_name = self.options.get('prog')
         show_nested = 'show-nested' in self.options
+        flat_toctree = 'flat-toctree' in self.options
         commands = self.options.get('commands')
 
         return self._generate_nodes(prog_name, command, None, show_nested,
-                                    commands)
+                                    flat_toctree, commands)
 
 
 def setup(app):

@@ -38,6 +38,9 @@ Once enabled, *sphinx-click* enables automatic documentation for
    ``:show-nested:``
      Enable full documentation for sub-commands.
 
+   ``:flat-toctree:``
+     Generate a flat toctree for nested commands (by a hierarchical one is generated)
+
    ``:commands:``
      Document only listed commands.
 
