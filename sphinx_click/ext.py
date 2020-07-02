@@ -272,7 +272,7 @@ def _format_command(ctx, show_nested, commands=None):
         yield line
 
     # if we're nesting commands, we need to do this slightly differently
-    if show_nested:
+    if show_nested in ["full", "no"]:
         return
 
     commands = _filter_commands(ctx, commands)
@@ -297,7 +297,7 @@ class ClickDirective(rst.Directive):
     required_arguments = 1
     option_spec = {
         'prog': directives.unchanged_required,
-        'show-nested': directives.flag,
+        'show-nested': directives.unchanged,
         'commands': directives.unchanged,
     }
 
@@ -341,8 +341,8 @@ class ClickDirective(rst.Directive):
     def _generate_nodes(self,
                         name,
                         command,
-                        parent=None,
-                        show_nested=False,
+                        parent,
+                        show_nested,
                         commands=None):
         """Generate the relevant Sphinx nodes.
 
@@ -351,7 +351,7 @@ class ClickDirective(rst.Directive):
         :param name: Name of command, as used on the command line
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
-        :param show_nested: Whether subcommands should be included in output
+        :param show_nested: The granularity of subcommand details.
         :param commands: Display only listed commands or skip the section if
             empty
         :returns: A list of nested docutil nodes
@@ -362,7 +362,6 @@ class ClickDirective(rst.Directive):
             return []
 
         # Title
-
         section = nodes.section(
             '',
             nodes.title(text=name),
@@ -383,7 +382,7 @@ class ClickDirective(rst.Directive):
 
         # Subcommands
 
-        if show_nested:
+        if show_nested == "full":
             commands = _filter_commands(ctx, commands)
             for command in commands:
                 section.extend(
@@ -401,7 +400,13 @@ class ClickDirective(rst.Directive):
             raise self.error(':prog: must be specified')
 
         prog_name = self.options.get('prog')
-        show_nested = 'show-nested' in self.options
+        show_nested = self.options.get('show-nested', 'short')
+        if show_nested == "":
+            # Backwards compatibility; an empty value previously meant "full".
+            show_nested = "full"
+        if show_nested not in ["no", "short", "full"]:
+            raise self.error(":show-nested: must be 'no', 'short' or 'full'.")
+
         commands = self.options.get('commands')
 
         return self._generate_nodes(prog_name, command, None, show_nested,

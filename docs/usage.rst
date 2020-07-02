@@ -36,7 +36,9 @@ Once enabled, *sphinx-click* enables automatic documentation for
    The following options are optional:
 
    ``:show-nested:``
-     Enable full documentation for sub-commands.
+     Set to "full" to enable full documentation for sub-commands. Set to "no"
+     to entirely omit sub-commands. Set to short to only list sub-commands.
+     Defaults to "short".
 
    ``:commands:``
      Document only listed commands.
