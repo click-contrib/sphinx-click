@@ -20,7 +20,7 @@ Once enabled, *sphinx-click* enables automatic documentation for
 
        .. click:: module:parser
           :prog: hello-world
-          :show-nested:
+          :nested: full
 
    The directive takes the import name of a *click* object as its sole
    argument. This should be a subclass of |click.core.BaseCommand|_, such as
@@ -35,11 +35,25 @@ Once enabled, *sphinx-click* enables automatic documentation for
 
    The following options are optional:
 
-   ``:show-nested:``
-     Enable full documentation for sub-commands.
+   ``:nested:``
+     Whether subcommands should also be shown. One of:
+
+     ``full``
+       List sub-commands with full documentation.
+
+    ``short``
+       List sub-commands with short documentation.
+
+    ``none``
+       Do not list sub-commands.
+
+     Defaults to ``short`` unless ``show-nested`` (deprecated) is set.
 
    ``:commands:``
      Document only listed commands.
+
+   ``:show-nested:``
+     This option is deprecated; use ``nested`` instead.
 
    The generated documentation includes anchors for the generated commands,
    their options and their environment variables using the `Sphinx standard
@@ -84,14 +98,28 @@ To document this, use the following:
     .. click:: hello_world:greet
       :prog: hello-world
 
-If you wish to include full documentation for the subcommand, ``hello``, in the
-output, add the ``show-nested`` flag.
+By default, the subcommand, ``hello``, is listed but no documentation provided.
+If you wish to include full documentation for the subcommand in the output,
+configure the ``nested`` flag to ``full``.
 
 .. code-block:: rst
 
     .. click:: hello_world:greet
       :prog: hello-world
-      :show-nested:
+      :nested: full
+
+.. note::
+
+    The ``nested`` flag replaces the deprecated ``show-nested`` flag.
+
+Conversely, if you do not wish to list these subcommands or wish to handle them
+separately, configure the ``nested`` flag to ``none``.
+
+.. code-block:: rst
+
+    .. click:: hello_world:greet
+      :prog: hello-world
+      :nested: none
 
 You can also document only selected commands by using ``:commands:`` option.
 
@@ -123,7 +151,7 @@ Modifying ``sys.path``
 ----------------------
 
 If the application or script you wish to document is not installed (i.e. you
-have not installed it with `pip` or run ``python setup.py``), then you may need
+have not installed it with *pip* or run ``python setup.py``), then you may need
 to modify ``sys.path``. For example, given the following application::
 
     git
@@ -150,7 +178,7 @@ the application:
 
     .. click:: git.git:cli
        :prog: git
-       :show-nested:
+       :nested: full
 
 assuming the group or command in ``git.git`` is named ``cli``.
 

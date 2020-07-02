@@ -53,7 +53,7 @@ documentation.
 
    .. click:: module:parser
       :prog: hello-world
-      :show-nested:
+      :nested: full
 
 Detailed information on the various options available is provided in the
 `documentation <https://sphinx-click.readthedocs.io>`_.

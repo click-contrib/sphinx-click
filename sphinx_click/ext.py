@@ -1,4 +1,5 @@
 import traceback
+import warnings
 
 import click
 from docutils import nodes
@@ -10,6 +11,10 @@ from sphinx.util import nodes as sphinx_nodes
 
 LOG = logging.getLogger(__name__)
 CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
+
+NESTED_FULL = 'full'
+NESTED_SHORT = 'short'
+NESTED_NONE = 'none'
 
 
 def _indent(text, level=1):
@@ -263,7 +268,7 @@ def _filter_commands(ctx, commands=None):
     return [lookup[name] for name in names if name in lookup]
 
 
-def _format_command(ctx, show_nested, commands=None):
+def _format_command(ctx, nested, commands=None):
     """Format the output of `click.Command`."""
     if CLICK_VERSION >= (7, 0) and ctx.command.hidden:
         return
@@ -318,7 +323,7 @@ def _format_command(ctx, show_nested, commands=None):
         yield line
 
     # if we're nesting commands, we need to do this slightly differently
-    if show_nested:
+    if nested in (NESTED_FULL, NESTED_NONE):
         return
 
     commands = _filter_commands(ctx, commands)
@@ -337,14 +342,29 @@ def _format_command(ctx, show_nested, commands=None):
         yield ''
 
 
+def nested(argument):
+    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE)
+    if not argument:
+        return None
+
+    if argument not in values:
+        raise ValueError(
+            "%s is not a valid value for ':nested:'; allowed values: %s"
+            % directives.format_values(values)
+        )
+
+    return argument
+
+
 class ClickDirective(rst.Directive):
 
     has_content = False
     required_arguments = 1
     option_spec = {
         'prog': directives.unchanged_required,
-        'show-nested': directives.flag,
+        'nested': nested,
         'commands': directives.unchanged,
+        'show-nested': directives.flag,
     }
 
     def _load_module(self, module_path):
@@ -387,9 +407,7 @@ class ClickDirective(rst.Directive):
             )
         return parser
 
-    def _generate_nodes(
-        self, name, command, parent=None, show_nested=False, commands=None
-    ):
+    def _generate_nodes(self, name, command, parent, nested, commands=None):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -397,7 +415,7 @@ class ClickDirective(rst.Directive):
         :param name: Name of command, as used on the command line
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
-        :param show_nested: Whether subcommands should be included in output
+        :param nested: The granularity of subcommand details.
         :param commands: Display only listed commands or skip the section if
             empty
         :returns: A list of nested docutil nodes
@@ -421,7 +439,7 @@ class ClickDirective(rst.Directive):
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
-        lines = _format_command(ctx, show_nested, commands)
+        lines = _format_command(ctx, nested, commands)
         for line in lines:
             LOG.debug(line)
             result.append(line, source_name)
@@ -430,12 +448,10 @@ class ClickDirective(rst.Directive):
 
         # Subcommands
 
-        if show_nested:
+        if nested == NESTED_FULL:
             commands = _filter_commands(ctx, commands)
             for command in commands:
-                section.extend(
-                    self._generate_nodes(command.name, command, ctx, show_nested)
-                )
+                section.extend(self._generate_nodes(command.name, command, ctx, nested))
 
         return [section]
 
@@ -449,9 +465,23 @@ class ClickDirective(rst.Directive):
 
         prog_name = self.options.get('prog')
         show_nested = 'show-nested' in self.options
+        nested = self.options.get('nested')
+
+        if show_nested:
+            if nested:
+                raise self.error(
+                    "':nested:' and ':show-nested:' are mutually exclusive"
+                )
+            else:
+                warnings.warn(
+                    "':show-nested:' is deprecated; use ':nested: full'",
+                    DeprecationWarning,
+                )
+                nested = NESTED_FULL if show_nested else NESTED_SHORT
+
         commands = self.options.get('commands')
 
-        return self._generate_nodes(prog_name, command, None, show_nested, commands)
+        return self._generate_nodes(prog_name, command, None, nested, commands)
 
 
 def setup(app):

@@ -21,7 +21,7 @@ class CommandTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(foobar, info_name='foobar')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -58,7 +58,7 @@ class CommandTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(foobar, info_name='foobar')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -121,7 +121,7 @@ class CommandTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(foobar, info_name='foobar')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -164,7 +164,7 @@ class CommandTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(foobar, info_name='foobar')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -202,7 +202,7 @@ class CommandTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(foobar, info_name='foobar')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual('', '\n'.join(output))
 
@@ -223,7 +223,7 @@ class CommandTestCase(unittest.TestCase):
             """
 
         ctx = click.Context(hello, info_name='hello')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -269,7 +269,7 @@ class GroupTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -300,7 +300,7 @@ class GroupTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -365,7 +365,7 @@ class GroupTestCase(unittest.TestCase):
             pass
 
         ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -406,14 +406,15 @@ class NestedCommandsTestCase(unittest.TestCase):
 
         return click.Context(cli, info_name='cli')
 
-    def test_hide_nested(self):
-        """Validate a nested command without show_nested.
+    def test_nested_short(self):
+        """Validate a nested command with 'nested' of 'short' (default).
 
-        If we're not showing sub-commands separately, we should list them.
+        We should list minimal help texts for sub-commands since they're not
+        being handled separately.
         """
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -435,14 +436,37 @@ class NestedCommandsTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
-    def test_show_nested(self):
-        """Validate a nested command with show_nested.
+    def test_nested_full(self):
+        """Validate a nested command with 'nested' of 'full'.
 
-        If we're not showing sub-commands separately, we should not list them.
+        We should not list sub-commands since they're being handled separately.
         """
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=True))
+        output = list(ext._format_command(ctx, nested='full'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command group.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
+    def test_nested_none(self):
+        """Validate a nested command with 'nested' of 'none'.
+
+        We should not list sub-commands.
+        """
+
+        ctx = self._get_ctx()
+        output = list(ext._format_command(ctx, nested='none'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -482,7 +506,7 @@ class CommandFilterTestCase(unittest.TestCase):
         """Validate an empty command group."""
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=False, commands=''))
+        output = list(ext._format_command(ctx, nested='short', commands=''))
 
         self.assertEqual(
             textwrap.dedent(
@@ -502,9 +526,7 @@ class CommandFilterTestCase(unittest.TestCase):
         """Validate the order of commands."""
 
         ctx = self._get_ctx()
-        output = list(
-            ext._format_command(ctx, show_nested=False, commands='world, hello')
-        )
+        output = list(ext._format_command(ctx, nested='short', commands='world, hello'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -563,7 +585,7 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 
         cli = MyCLI(help='A sample custom multicommand.')
         ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
@@ -622,7 +644,7 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 
         cli = MyCLI(help='A sample custom multicommand.')
         ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, show_nested=False))
+        output = list(ext._format_command(ctx, nested='short'))
 
         # Note that we do NOT expect this to show the 'hidden' command
         self.assertEqual(
