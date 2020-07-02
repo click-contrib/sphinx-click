@@ -1,4 +1,5 @@
 import traceback
+import warnings
 
 import click
 from docutils import nodes, statemachine
@@ -291,13 +292,28 @@ def _format_command(ctx, show_nested, commands=None):
         yield ''
 
 
+def nested(argument):
+    values = "full", "short", "none"
+    if not argument:
+        return None
+
+    if argument not in values:
+        raise ValueError(
+            'must supply an argument; choose from %s'
+            % directives.format_values(values)
+        )
+
+    return argument
+
+
 class ClickDirective(rst.Directive):
 
     has_content = False
     required_arguments = 1
     option_spec = {
         'prog': directives.unchanged_required,
-        'show-nested': directives.unchanged,
+        'show-nested': directives.flag,
+        'nested': nested,
         'commands': directives.unchanged,
     }
 
@@ -400,17 +416,23 @@ class ClickDirective(rst.Directive):
             raise self.error(':prog: must be specified')
 
         prog_name = self.options.get('prog')
-        show_nested = self.options.get('show-nested', 'short')
-        if show_nested == "":
-            # Backwards compatibility; an empty value previously meant "full".
-            show_nested = "full"
-        if show_nested not in ["no", "short", "full"]:
-            raise self.error(":show-nested: must be 'no', 'short' or 'full'.")
+        show_nested = 'show-nested' in self.options
+        nested = self.options.get('nested')
+
+        if nested and show_nested:
+            raise self.error(
+                ":nested: and : show-nested: are mutually exclusive"
+            )
+        elif not nested:
+            warnings.warn(
+                ":show-nested: is deprecated, please use ':nested: full'",
+                DeprecationWarning,
+            )
+            nested = "full" if show_nested else "short"
 
         commands = self.options.get('commands')
 
-        return self._generate_nodes(prog_name, command, None, show_nested,
-                                    commands)
+        return self._generate_nodes(prog_name, command, None, nested, commands)
 
 
 def setup(app):
