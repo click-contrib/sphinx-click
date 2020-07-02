@@ -308,14 +308,14 @@ class NestedCommandsTestCase(unittest.TestCase):
             A sample command.
         """).lstrip(), '\n'.join(output))
 
-    def test_show_nested(self):
+    def test_nested_full(self):
         """Validate a nested command with show_nested.
 
         If we're not showing sub-commands separately, we should not list them.
         """
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=True))
+        output = list(ext._format_command(ctx, show_nested="full"))
 
         self.assertEqual(
             textwrap.dedent("""
@@ -325,6 +325,31 @@ class NestedCommandsTestCase(unittest.TestCase):
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
+        """).lstrip(), '\n'.join(output))
+
+    def test_nested_short(self):
+        """Validate a nested command with show_nested.
+
+        If we're not showing sub-commands separately, we should not list them.
+        """
+
+        ctx = self._get_ctx()
+        output = list(ext._format_command(ctx, show_nested="short"))
+
+        self.assertEqual(
+            textwrap.dedent("""
+        A sample command group.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: hello
+
+            A sample command.
         """).lstrip(), '\n'.join(output))
 
 
