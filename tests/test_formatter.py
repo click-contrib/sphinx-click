@@ -22,14 +22,18 @@ class CommandTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command.
 
         .. program:: foobar
         .. code-block:: shell
 
             foobar [OPTIONS]
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
     def test_basic_parameters(self):
         """Validate a combination of parameters.
@@ -40,8 +44,11 @@ class CommandTestCase(unittest.TestCase):
 
         @click.command()
         @click.option('--param', envvar='PARAM', help='A sample option')
-        @click.option('--choice', help='A sample option with choices',
-                      type=click.Choice(['Option1', 'Option2']))
+        @click.option(
+            '--choice',
+            help='A sample option with choices',
+            type=click.Choice(['Option1', 'Option2']),
+        )
         @click.argument('ARG', envvar='ARG')
         def foobar(bar):
             """A sample command."""
@@ -51,7 +58,8 @@ class CommandTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command.
 
         .. program:: foobar
@@ -92,17 +100,26 @@ class CommandTestCase(unittest.TestCase):
            :noindex:
 
             Provide a default for :option:`ARG`
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
-    @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
-                     'Allowing show_default to be a string was added in Click 7.0')
+    @unittest.skipIf(
+        ext.CLICK_VERSION < (7, 0),
+        'Allowing show_default to be a string was added in Click 7.0',
+    )
     def test_defaults(self):
         """Validate formatting of user documented defaults.
         """
 
         @click.command()
         @click.option('--num-param', type=int, default=42, show_default=True)
-        @click.option('--param', default=lambda: None, show_default='Something computed at runtime')
+        @click.option(
+            '--param',
+            default=lambda: None,
+            show_default='Something computed at runtime',
+        )
         def foobar(bar):
             """A sample command."""
             pass
@@ -111,7 +128,8 @@ class CommandTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command.
 
         .. program:: foobar
@@ -128,10 +146,14 @@ class CommandTestCase(unittest.TestCase):
         .. option:: --param <param>
 
             [default: Something computed at runtime]
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
-    @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
-                     'The hidden flag was added in Click 7.0')
+    @unittest.skipIf(
+        ext.CLICK_VERSION < (7, 0), 'The hidden flag was added in Click 7.0'
+    )
     def test_hidden(self):
         """Validate a `click.Command` with the `hidden` flag."""
 
@@ -163,14 +185,18 @@ class GroupTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
     def test_basic_parameters(self):
         """Validate a combination of parameters.
@@ -190,7 +216,8 @@ class GroupTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
@@ -225,7 +252,10 @@ class GroupTestCase(unittest.TestCase):
            :noindex:
 
             Provide a default for :option:`ARG`
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
     def test_no_line_wrapping(self):
         r"""Validate behavior when a \b character is present.
@@ -251,7 +281,8 @@ class GroupTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         | This is
@@ -265,7 +296,10 @@ class GroupTestCase(unittest.TestCase):
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
 
 class NestedCommandsTestCase(unittest.TestCase):
@@ -293,7 +327,8 @@ class NestedCommandsTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
@@ -306,7 +341,10 @@ class NestedCommandsTestCase(unittest.TestCase):
         .. object:: hello
 
             A sample command.
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
     def test_show_nested(self):
         """Validate a nested command with show_nested.
@@ -318,14 +356,18 @@ class NestedCommandsTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=True))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
 
 class CommandFilterTestCase(unittest.TestCase):
@@ -352,24 +394,30 @@ class CommandFilterTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False, commands=''))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
     def test_order_of_commands(self):
         """Validate the order of commands."""
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, show_nested=False,
-                                          commands='world, hello'))
+        output = list(
+            ext._format_command(ctx, show_nested=False, commands='world, hello')
+        )
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample command group.
 
         .. program:: cli
@@ -386,7 +434,10 @@ class CommandFilterTestCase(unittest.TestCase):
         .. object:: hello
 
             A sample command.
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
 
 class CustomMultiCommandTestCase(unittest.TestCase):
@@ -422,7 +473,8 @@ class CustomMultiCommandTestCase(unittest.TestCase):
         output = list(ext._format_command(ctx, show_nested=False))
 
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample custom multicommand.
 
         .. program:: cli
@@ -439,12 +491,17 @@ class CustomMultiCommandTestCase(unittest.TestCase):
         .. object:: world
 
             A world command.
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
 
-    @unittest.skipIf(ext.CLICK_VERSION < (7, 0),
-                     'The hidden flag was added in Click 7.0')
+    @unittest.skipIf(
+        ext.CLICK_VERSION < (7, 0), 'The hidden flag was added in Click 7.0'
+    )
     def test_hidden(self):
         """Ensure 'hidden' subcommands are not shown."""
+
         @click.command()
         def hello():
             """A sample command."""
@@ -476,7 +533,8 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 
         # Note that we do NOT expect this to show the 'hidden' command
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
         A sample custom multicommand.
 
         .. program:: cli
@@ -493,4 +551,7 @@ class CustomMultiCommandTestCase(unittest.TestCase):
         .. object:: world
 
             A world command.
-        """).lstrip(), '\n'.join(output))
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )

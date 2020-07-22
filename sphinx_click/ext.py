@@ -38,6 +38,7 @@ def _get_help_record(opt):
 
     [1] http://www.sphinx-doc.org/en/stable/domains.html#directive-option
     """
+
     def _write_opts(opts):
         rv, _ = click.formatting.join_options(opts)
         if not opt.is_flag and not opt.count:
@@ -57,9 +58,14 @@ def _get_help_record(opt):
             # documentation thus needs a manually written string.
             extra.append('default: %s' % opt.show_default)
         else:
-            extra.append('default: %s' %
-                         (', '.join('%s' % d for d in opt.default) if isinstance(
-                         opt.default, (list, tuple)) else opt.default, ))
+            extra.append(
+                'default: %s'
+                % (
+                    ', '.join('%s' % d for d in opt.default)
+                    if isinstance(opt.default, (list, tuple))
+                    else opt.default,
+                )
+            )
     if opt.required:
         extra.append('required')
     if extra:
@@ -84,9 +90,9 @@ def _format_description(ctx):
         return
 
     bar_enabled = False
-    for line in statemachine.string2lines(help_string,
-                                          tab_width=4,
-                                          convert_whitespace=True):
+    for line in statemachine.string2lines(
+        help_string, tab_width=4, convert_whitespace=True
+    ):
         if line == '\b':
             bar_enabled = True
             continue
@@ -113,9 +119,9 @@ def _format_option(opt):
     yield '.. option:: {}'.format(opt[0])
     if opt[1]:
         yield ''
-        for line in statemachine.string2lines(opt[1],
-                                              tab_width=4,
-                                              convert_whitespace=True):
+        for line in statemachine.string2lines(
+            opt[1], tab_width=4, convert_whitespace=True
+        ):
             yield _indent(line)
 
 
@@ -123,8 +129,9 @@ def _format_options(ctx):
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
     params = [
-        x for x in ctx.command.params
-        if isinstance(x, click.Option) and not getattr(x, 'hidden', False)
+        param
+        for param in ctx.command.params
+        if isinstance(param, click.Option) and not getattr(param, 'hidden', False)
     ]
 
     for param in params:
@@ -137,9 +144,11 @@ def _format_argument(arg):
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
-    yield _indent('{} argument{}'.format(
-        'Required' if arg.required else 'Optional',
-        '(s)' if arg.nargs != 1 else ''))
+    yield _indent(
+        '{} argument{}'.format(
+            'Required' if arg.required else 'Optional', '(s)' if arg.nargs != 1 else ''
+        )
+    )
 
 
 def _format_arguments(ctx):
@@ -195,9 +204,9 @@ def _format_subcommand(command):
 
     if short_help:
         yield ''
-        for line in statemachine.string2lines(short_help,
-                                              tab_width=4,
-                                              convert_whitespace=True):
+        for line in statemachine.string2lines(
+            short_help, tab_width=4, convert_whitespace=True
+        ):
             yield _indent(line)
 
 
@@ -311,39 +320,39 @@ class ClickDirective(rst.Directive):
             module_name, attr_name = module_path.split(':', 1)
         except ValueError:  # noqa
             raise self.error(
-                '"{}" is not of format "module:parser"'.format(module_path))
+                '"{}" is not of format "module:parser"'.format(module_path)
+            )
 
         try:
             mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
-            err_msg = 'Failed to import "{}" from "{}". '.format(
-                attr_name, module_name)
+            err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
             if isinstance(exc, SystemExit):
                 err_msg += 'The module appeared to call sys.exit()'
             else:
                 err_msg += 'The following exception was raised:\n{}'.format(
-                    traceback.format_exc())
+                    traceback.format_exc()
+                )
 
             raise self.error(err_msg)
 
         if not hasattr(mod, attr_name):
-            raise self.error('Module "{}" has no attribute "{}"'.format(
-                module_name, attr_name))
+            raise self.error(
+                'Module "{}" has no attribute "{}"'.format(module_name, attr_name)
+            )
 
         parser = getattr(mod, attr_name)
 
         if not isinstance(parser, click.BaseCommand):
-            raise self.error('"{}" of type "{}" is not derived from '
-                             '"click.BaseCommand"'.format(
-                                 type(parser), module_path))
+            raise self.error(
+                '"{}" of type "{}" is not derived from '
+                '"click.BaseCommand"'.format(type(parser), module_path)
+            )
         return parser
 
-    def _generate_nodes(self,
-                        name,
-                        command,
-                        parent=None,
-                        show_nested=False,
-                        commands=None):
+    def _generate_nodes(
+        self, name, command, parent=None, show_nested=False, commands=None
+    ):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -367,7 +376,8 @@ class ClickDirective(rst.Directive):
             '',
             nodes.title(text=name),
             ids=[nodes.make_id(ctx.command_path)],
-            names=[nodes.fully_normalize_name(ctx.command_path)])
+            names=[nodes.fully_normalize_name(ctx.command_path)],
+        )
 
         # Summary
 
@@ -387,8 +397,8 @@ class ClickDirective(rst.Directive):
             commands = _filter_commands(ctx, commands)
             for command in commands:
                 section.extend(
-                    self._generate_nodes(command.name, command, ctx,
-                                         show_nested))
+                    self._generate_nodes(command.name, command, ctx, show_nested)
+                )
 
         return [section]
 
@@ -404,8 +414,7 @@ class ClickDirective(rst.Directive):
         show_nested = 'show-nested' in self.options
         commands = self.options.get('commands')
 
-        return self._generate_nodes(prog_name, command, None, show_nested,
-                                    commands)
+        return self._generate_nodes(prog_name, command, None, show_nested, commands)
 
 
 def setup(app):
