@@ -112,6 +112,39 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    def test_help_epilog(self):
+        """Validate formatting of explicit help and epilog strings."""
+
+        @click.command(help='A sample command.', epilog='A sample epilog.')
+        @click.option('--param', help='A sample option')
+        def foobar(bar):
+            pass
+
+        ctx = click.Context(foobar, info_name='foobar')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --param <param>
+
+            A sample option
+
+        A sample epilog.
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
     @unittest.skipIf(
         ext.CLICK_VERSION < (7, 0),
         'Allowing show_default to be a string was added in Click 7.0',

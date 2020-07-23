@@ -225,6 +225,23 @@ def _format_subcommand(command):
             yield _indent(line)
 
 
+def _format_epilog(ctx):
+    """Format the epilog for a given `click.Command`.
+
+    We parse this as reStructuredText, allowing users to embed rich
+    information in their help messages if they so choose.
+    """
+    epilog_string = ctx.command.epilog
+    if not epilog_string:
+        return
+
+    for line in statemachine.string2lines(
+        epilog_string, tab_width=4, convert_whitespace=True
+    ):
+        yield line
+    yield ''
+
+
 def _get_lazyload_commands(multicommand):
     commands = {}
     for command in multicommand.list_commands(multicommand):
@@ -293,6 +310,11 @@ def _format_command(ctx, show_nested, commands=None):
         yield ''
 
     for line in lines:
+        yield line
+
+    # description
+
+    for line in _format_epilog(ctx):
         yield line
 
     # if we're nesting commands, we need to do this slightly differently
