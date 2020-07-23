@@ -1,9 +1,10 @@
 import traceback
 
 import click
-from docutils import nodes, statemachine
+from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
+from docutils import statemachine
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
 
