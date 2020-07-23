@@ -46,6 +46,7 @@ class CommandTestCase(unittest.TestCase):
 
         @click.command()
         @click.option('--param', envvar='PARAM', help='A sample option')
+        @click.option('--another', metavar='[FOO]', help='Another option')
         @click.option(
             '--choice',
             help='A sample option with choices',
@@ -74,6 +75,10 @@ class CommandTestCase(unittest.TestCase):
         .. option:: --param <param>
 
             A sample option
+
+        .. option:: --another <FOO>
+
+            Another option
 
         .. option:: --choice <choice>
 
