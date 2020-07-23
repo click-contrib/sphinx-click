@@ -44,7 +44,7 @@ Enable the plugin in your Sphinx `conf.py` file:
 
 .. code-block:: python
 
-   extensions = ['sphinx_click.ext']
+   extensions = ['sphinx_click']
 
 Once enabled, you can now use the plugin wherever necessary in the
 documentation.
