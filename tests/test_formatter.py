@@ -84,7 +84,7 @@ class CommandTestCase(unittest.TestCase):
 
             A sample option with choices
 
-            :options: Option1|Option2
+            :options: Option1 | Option2
 
         .. rubric:: Arguments
 

@@ -88,7 +88,7 @@ def _get_help_record(opt):
             )
 
     if isinstance(opt.type, click.Choice):
-        extras.append(':options: %s' % '|'.join(opt.type.choices))
+        extras.append(':options: %s' % ' | '.join(opt.type.choices))
 
     if extras:
         if out:
