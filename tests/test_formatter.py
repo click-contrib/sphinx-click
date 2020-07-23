@@ -142,11 +142,11 @@ class CommandTestCase(unittest.TestCase):
 
         .. option:: --num-param <num_param>
 
-            [default: 42]
+            :default: 42
 
         .. option:: --param <param>
 
-            [default: Something computed at runtime]
+            :default: Something computed at runtime
         """
             ).lstrip(),
             '\n'.join(output),
@@ -208,7 +208,7 @@ class CommandTestCase(unittest.TestCase):
 
         .. option:: --name <name>
 
-            Name to say hello to.  [required]
+            **Required** Name to say hello to.
         """
             ).lstrip(),
             '\n'.join(output),

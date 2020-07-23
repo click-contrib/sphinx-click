@@ -51,34 +51,44 @@ def _get_help_record(opt):
     if opt.secondary_opts:
         rv.append(_write_opts(opt.secondary_opts))
 
-    help = opt.help or ''
-    extra = []
+    out = []
+    if opt.help:
+        if opt.required:
+            out.append('**Required** %s' % opt.help)
+        else:
+            out.append(opt.help)
+    else:
+        if opt.required:
+            out.append('**Required**')
+
+    extras = []
+
     if opt.default is not None and opt.show_default:
         if isinstance(opt.show_default, str):
             # Starting from Click 7.0 this can be a string as well. This is
             # mostly useful when the default is not a constant and
             # documentation thus needs a manually written string.
-            extra.append('default: %s' % opt.show_default)
+            extras.append(':default: %s' % opt.show_default)
         else:
-            extra.append(
-                'default: %s'
+            extras.append(
+                ':default: %s'
                 % (
                     ', '.join('%s' % d for d in opt.default)
                     if isinstance(opt.default, (list, tuple))
                     else opt.default,
                 )
             )
-    if opt.required:
-        extra.append('required')
-    if extra:
-        help = '%s[%s]' % (help and help + '  ' or '', '; '.join(extra))
-    if isinstance(opt.type, click.Choice):
-        help = "%s\n\n:options: %s" % (
-            help and help + "  " or "",
-            "|".join(opt.type.choices),
-        )
 
-    return ', '.join(rv), help
+    if isinstance(opt.type, click.Choice):
+        extras.append(':options: %s' % '|'.join(opt.type.choices))
+
+    if extras:
+        if out:
+            out.append('')
+
+        out.extend(extras)
+
+    return ', '.join(rv), '\n'.join(out)
 
 
 def _format_description(ctx):
