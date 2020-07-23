@@ -6,6 +6,8 @@ from sphinx_click import ext
 
 
 class CommandTestCase(unittest.TestCase):
+    """Validate basic ``click.Command`` instances."""
+
     def test_no_parameters(self):
         """Validate a `click.Command` with no parameters.
 
@@ -110,8 +112,7 @@ class CommandTestCase(unittest.TestCase):
         'Allowing show_default to be a string was added in Click 7.0',
     )
     def test_defaults(self):
-        """Validate formatting of user documented defaults.
-        """
+        """Validate formatting of user documented defaults."""
 
         @click.command()
         @click.option('--num-param', type=int, default=42, show_default=True)
@@ -215,6 +216,8 @@ class CommandTestCase(unittest.TestCase):
 
 
 class GroupTestCase(unittest.TestCase):
+    """Validate basic ``click.Group`` instances."""
+
     def test_no_parameters(self):
         """Validate a `click.Group` with no parameters.
 
@@ -349,6 +352,8 @@ class GroupTestCase(unittest.TestCase):
 
 
 class NestedCommandsTestCase(unittest.TestCase):
+    """Validate ``click.Command`` instances inside ``click.Group`` instances."""
+
     @staticmethod
     def _get_ctx():
         @click.group()
@@ -417,6 +422,8 @@ class NestedCommandsTestCase(unittest.TestCase):
 
 
 class CommandFilterTestCase(unittest.TestCase):
+    """Validate filtering of commands."""
+
     @staticmethod
     def _get_ctx():
         @click.group()
@@ -487,6 +494,8 @@ class CommandFilterTestCase(unittest.TestCase):
 
 
 class CustomMultiCommandTestCase(unittest.TestCase):
+    """Validate ``click.MultiCommand`` instances."""
+
     def test_basics(self):
         """Validate a custom ``click.MultiCommand`` with no parameters.
 
