@@ -167,6 +167,52 @@ class CommandTestCase(unittest.TestCase):
 
         self.assertEqual('', '\n'.join(output))
 
+    def test_titles(self):
+        """Validate a `click.Command` with nested titles."""
+
+        @click.command()
+        @click.option('--name', help='Name to say hello to.', required=True, type=str)
+        def hello(name):
+            """Prints hello to name given.
+
+            Examples
+            --------
+
+            .. code:: bash
+
+                my_cli hello --name "Jack"
+            """
+
+        ctx = click.Context(hello, info_name='hello')
+        output = list(ext._format_command(ctx, show_nested=False))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        Prints hello to name given.
+
+        Examples
+        --------
+
+        .. code:: bash
+
+            my_cli hello --name "Jack"
+
+        .. program:: hello
+        .. code-block:: shell
+
+            hello [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --name <name>
+
+            Name to say hello to.  [required]
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
 
 class GroupTestCase(unittest.TestCase):
     def test_no_parameters(self):

@@ -77,7 +77,6 @@ module:
         """Greet the world."""
         click.echo('Hello world!')
 
-
 To document this, use the following:
 
 .. code-block:: rst

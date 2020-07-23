@@ -5,6 +5,7 @@ from docutils import nodes, statemachine
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
 from sphinx.util import logging
+from sphinx.util import nodes as sphinx_nodes
 
 LOG = logging.getLogger(__name__)
 CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
@@ -389,7 +390,7 @@ class ClickDirective(rst.Directive):
             LOG.debug(line)
             result.append(line, source_name)
 
-        self.state.nested_parse(result, 0, section)
+        sphinx_nodes.nested_parse_with_titles(self.state, result, section)
 
         # Subcommands
 
