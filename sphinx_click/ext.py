@@ -407,7 +407,8 @@ class ClickDirective(rst.Directive):
             )
         return parser
 
-    def _generate_nodes(self, name, command, parent, nested, commands=None):
+    def _generate_nodes(self, name, command, parent, nested, commands=None,
+                        semantic_group=False):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -418,6 +419,8 @@ class ClickDirective(rst.Directive):
         :param nested: The granularity of subcommand details.
         :param commands: Display only listed commands or skip the section if
             empty
+        :param semantic_group: Display command as title and description for
+            CommandCollection.
         :returns: A list of nested docutil nodes
         """
         ctx = click.Context(command, info_name=name, parent=parent)
@@ -435,11 +438,14 @@ class ClickDirective(rst.Directive):
         )
 
         # Summary
-
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
-        lines = _format_command(ctx, nested, commands)
+        if semantic_group:
+            lines = _format_description(ctx)
+        else:
+            lines = _format_command(ctx, nested, commands)
+
         for line in lines:
             LOG.debug(line)
             result.append(line, source_name)
@@ -449,9 +455,19 @@ class ClickDirective(rst.Directive):
         # Subcommands
 
         if nested == NESTED_FULL:
-            commands = _filter_commands(ctx, commands)
-            for command in commands:
-                section.extend(self._generate_nodes(command.name, command, ctx, nested))
+            if isinstance(command, click.CommandCollection):
+                for source in command.sources:
+                    section.extend(self._generate_nodes(
+                        source.name, source, parent=ctx, nested=nested,
+                        semantic_group=True
+                    ))
+            else:
+                commands = _filter_commands(ctx, commands)
+                for command in commands:
+                    parent = ctx if not semantic_group else ctx.parent
+                    section.extend(self._generate_nodes(
+                        command.name, command, parent=parent, nested=nested
+                    ))
 
         return [section]
 
