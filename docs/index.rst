@@ -15,6 +15,7 @@ __ http://click.pocoo.org/
    usage
    contributing
    changelog
+   examples/index
 
 .. seealso::
 

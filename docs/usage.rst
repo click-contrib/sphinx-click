@@ -147,6 +147,27 @@ the roles provided by the `Sphinx standard domain`_.
 
     __ https://github.com/sphinx-doc/sphinx/issues/880
 
+Documenting |CommandCollection|_
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When building more complex CLI, one might need to bring together multiple groups
+of commands and make them accessible using a single client with |CommandCollection|_.
+*sphinx-click* renders collection of commands with multiple sections, one for each
+group listed in the command ``sources``. The group names are used as section titles
+and the help string from the description are used as section description.
+Thus, a client defined using a |CommandCollection| as ``cli`` will be rendered
+using *sphinx-click* and the following directive
+
+.. code-block:: rst
+
+   .. click:: cli:cli
+      :prog: cli
+      :nested: full
+
+with the subcommands of each group in different sections, one for each group in
+``sources``. An example is provided in :ref:`example_commandcollections`.
+
+
 Modifying ``sys.path``
 ----------------------
 
@@ -184,3 +205,6 @@ assuming the group or command in ``git.git`` is named ``cli``.
 
 Refer to `issue #2 <https://github.com/click-contrib/sphinx-click/issues/2>`__
 for more information.
+
+.. |CommandCollection| replace:: :code:`CommandCollection`
+.. _CommandCollection: https://click.palletsprojects.com/en/7.x/api/#click.CommandCollection
