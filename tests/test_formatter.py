@@ -670,3 +670,75 @@ class CustomMultiCommandTestCase(unittest.TestCase):
             ).lstrip(),
             '\n'.join(output),
         )
+
+
+class CommandCollectionTestCase(unittest.TestCase):
+    """Validate ``click.CommandCollection`` instances."""
+
+    def test_basics(self):
+        "Validate a ``click.CommandCollection`` with grouped outputs."
+
+        @click.group()
+        def grp1():
+            """A first group."""
+            pass
+
+        @grp1.command()
+        def hello():
+            """A hello command."""
+
+        @click.group()
+        def grp2():
+            """A second group."""
+            pass
+
+        @grp2.command()
+        def world():
+            """A world command."""
+
+        cli = click.CommandCollection(
+            name='cli', sources=[grp1, grp2],
+            help='A simple CommandCollection.'
+        )
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, nested='full'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A simple CommandCollection.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
+        output = list(ext._format_command(ctx, nested='short'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A simple CommandCollection.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: hello
+
+            A hello command.
+
+        .. object:: world
+
+            A world command.
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
