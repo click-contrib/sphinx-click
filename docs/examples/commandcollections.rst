@@ -1,14 +1,11 @@
-.. _example_commandcollections:
-
-Documentating |CommandCollection|
+Documenting |CommandCollection|
 =================================
 
-The client in the file ``examples/commandcollections/cli.py`` using a
-|CommandCollection| such as
+Consider the following sample application, using |CommandCollection|_:
 
 .. literalinclude:: ../../examples/commandcollections/cli.py
 
-The automatic documentation using *sphinx-click* gives for the following directive:
+This can be documented using *sphinx-click* like so:
 
 .. code-block:: rst
 

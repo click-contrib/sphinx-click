@@ -155,8 +155,8 @@ of commands and make them accessible using a single client with |CommandCollecti
 *sphinx-click* renders collection of commands with multiple sections, one for each
 group listed in the command ``sources``. The group names are used as section titles
 and the help string from the description are used as section description.
-Thus, a client defined using a |CommandCollection| as ``cli`` will be rendered
-using *sphinx-click* and the following directive
+Thus, a client defined using a |CommandCollection| as ``cli`` can be rendered
+using *sphinx-click* and the following directive:
 
 .. code-block:: rst
 
@@ -164,8 +164,8 @@ using *sphinx-click* and the following directive
       :prog: cli
       :nested: full
 
-with the subcommands of each group in different sections, one for each group in
-``sources``. An example is provided in :ref:`example_commandcollections`.
+This will render the subcommands of each group in different sections, one for each
+group in ``sources``. An example is provided in :doc:`examples/commandcollections`.
 
 
 Modifying ``sys.path``
