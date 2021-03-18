@@ -407,8 +407,9 @@ class ClickDirective(rst.Directive):
             )
         return parser
 
-    def _generate_nodes(self, name, command, parent, nested, commands=None,
-                        semantic_group=False):
+    def _generate_nodes(
+        self, name, command, parent, nested, commands=None, semantic_group=False
+    ):
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -457,17 +458,24 @@ class ClickDirective(rst.Directive):
         if nested == NESTED_FULL:
             if isinstance(command, click.CommandCollection):
                 for source in command.sources:
-                    section.extend(self._generate_nodes(
-                        source.name, source, parent=ctx, nested=nested,
-                        semantic_group=True
-                    ))
+                    section.extend(
+                        self._generate_nodes(
+                            source.name,
+                            source,
+                            parent=ctx,
+                            nested=nested,
+                            semantic_group=True,
+                        )
+                    )
             else:
                 commands = _filter_commands(ctx, commands)
                 for command in commands:
                     parent = ctx if not semantic_group else ctx.parent
-                    section.extend(self._generate_nodes(
-                        command.name, command, parent=parent, nested=nested
-                    ))
+                    section.extend(
+                        self._generate_nodes(
+                            command.name, command, parent=parent, nested=nested
+                        )
+                    )
 
         return [section]
 

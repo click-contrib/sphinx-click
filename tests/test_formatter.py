@@ -697,8 +697,7 @@ class CommandCollectionTestCase(unittest.TestCase):
             """A world command."""
 
         cli = click.CommandCollection(
-            name='cli', sources=[grp1, grp2],
-            help='A simple CommandCollection.'
+            name='cli', sources=[grp1, grp2], help='A simple CommandCollection.'
         )
         ctx = click.Context(cli, info_name='cli')
         output = list(ext._format_command(ctx, nested='full'))

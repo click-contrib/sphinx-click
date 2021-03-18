@@ -6,7 +6,7 @@ main = click.Group(
     name='Principal Commands',
     help="Principal commands that are used in ``cli``.\n\n"
     "The section name and description are obtained using the name and "
-    "description of the group passed as sources for |CommandCollection|_."
+    "description of the group passed as sources for |CommandCollection|_.",
 )
 
 
@@ -15,10 +15,7 @@ def cmd1():
     print('call cmd 1')
 
 
-helpers = click.Group(
-    name='Helper Commands',
-    help="Helper commands for ``cli``."
-)
+helpers = click.Group(name='Helper Commands', help="Helper commands for ``cli``.")
 
 
 @helpers.command()
@@ -35,6 +32,5 @@ def cmd3(user):
 
 
 cli = click.CommandCollection(
-    name='cli', sources=[main, helpers],
-    help='Some general info on ``cli``.'
+    name='cli', sources=[main, helpers], help='Some general info on ``cli``.'
 )
