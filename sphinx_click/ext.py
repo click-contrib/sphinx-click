@@ -1,3 +1,4 @@
+import re
 import traceback
 import warnings
 
@@ -15,6 +16,8 @@ CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
 NESTED_FULL = 'full'
 NESTED_SHORT = 'short'
 NESTED_NONE = 'none'
+
+ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
 
 def _indent(text, level=1):
@@ -108,6 +111,8 @@ def _format_description(ctx):
     help_string = ctx.command.help or ctx.command.short_help
     if not help_string:
         return
+
+    help_string = ANSI_ESC_SEQ_RE.sub('', help_string)
 
     bar_enabled = False
     for line in statemachine.string2lines(

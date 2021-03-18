@@ -266,6 +266,38 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    def test_ansi_escape_sequences(self):
+        """Validate that ANSI escape sequences are stripped."""
+
+        @click.command()
+        def foobar():
+            """A sample command with **sparkles**.
+
+            We've got \033[31mred text\033[0m, \033[104mblue backgrounds\033[0m, a
+            dash of \033[1mbold\033[0m and even some \033[4munderlined words\033[0m.
+            """
+            pass
+
+        ctx = click.Context(foobar, info_name='foobar')
+        output = list(ext._format_command(ctx, nested='short'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command with **sparkles**.
+
+        We've got red text, blue backgrounds, a
+        dash of bold and even some underlined words.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS]
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
 
 class GroupTestCase(unittest.TestCase):
     """Validate basic ``click.Group`` instances."""
