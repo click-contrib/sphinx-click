@@ -8,6 +8,8 @@ from sphinx_click import ext
 class CommandTestCase(unittest.TestCase):
     """Validate basic ``click.Command`` instances."""
 
+    maxDiff = None
+
     def test_no_parameters(self):
         """Validate a `click.Command` with no parameters.
 
@@ -52,6 +54,12 @@ class CommandTestCase(unittest.TestCase):
             help='A sample option with choices',
             type=click.Choice(['Option1', 'Option2']),
         )
+        @click.option(
+            '--numeric-choice',
+            metavar='<choice>',
+            help='A sample option with numeric choices',
+            type=click.Choice([1, 2, 3]),
+        )
         @click.argument('ARG', envvar='ARG')
         def foobar(bar):
             """A sample command."""
@@ -85,6 +93,12 @@ class CommandTestCase(unittest.TestCase):
             A sample option with choices
 
             :options: Option1 | Option2
+
+        .. option:: --numeric-choice <choice>
+
+            A sample option with numeric choices
+
+            :options: 1 | 2 | 3
 
         .. rubric:: Arguments
 
