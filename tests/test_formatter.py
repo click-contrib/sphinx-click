@@ -269,7 +269,23 @@ class CommandTestCase(unittest.TestCase):
     def test_ansi_escape_sequences(self):
         """Validate that ANSI escape sequences are stripped."""
 
-        @click.command()
+        @click.command(epilog='\033[31mA sample epilog.\033[0m')
+        @click.option(
+            '--name',
+            help='Name to say \033[94mhello\033[0m to.',
+            required=True,
+            type=str,
+        )
+        @click.option(
+            '--choice',
+            help='A sample option with choices',
+            type=click.Choice(['\033[94mOption1\033[0m', '\033[94mOption2\033[0m']),
+        )
+        @click.option(
+            '--param',
+            default=lambda: None,
+            show_default='Something computed at \033[94mruntime\033[0m',
+        )
         def foobar():
             """A sample command with **sparkles**.
 
@@ -293,6 +309,24 @@ class CommandTestCase(unittest.TestCase):
         .. code-block:: shell
 
             foobar [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --name <name>
+
+            **Required** Name to say hello to.
+
+        .. option:: --choice <choice>
+
+            A sample option with choices
+
+            :options: Option1 | Option2
+
+        .. option:: --param <param>
+
+            :default: Something computed at runtime
+
+        A sample epilog.
         """
             ).lstrip(),
             '\n'.join(output),

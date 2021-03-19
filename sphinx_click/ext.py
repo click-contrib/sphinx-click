@@ -145,7 +145,7 @@ def _format_option(opt):
     if opt[1]:
         yield ''
         for line in statemachine.string2lines(
-            opt[1], tab_width=4, convert_whitespace=True
+            ANSI_ESC_SEQ_RE.sub('', opt[1]), tab_width=4, convert_whitespace=True
         ):
             yield _indent(line)
 
@@ -241,12 +241,13 @@ def _format_epilog(ctx):
     We parse this as reStructuredText, allowing users to embed rich
     information in their help messages if they so choose.
     """
-    epilog_string = ctx.command.epilog
-    if not epilog_string:
+    if not ctx.command.epilog:
         return
 
     for line in statemachine.string2lines(
-        epilog_string, tab_width=4, convert_whitespace=True
+        ANSI_ESC_SEQ_RE.sub('', ctx.command.epilog),
+        tab_width=4,
+        convert_whitespace=True,
     ):
         yield line
     yield ''
