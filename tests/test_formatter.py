@@ -159,10 +159,6 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
-    @unittest.skipIf(
-        ext.CLICK_VERSION < (7, 0),
-        'Allowing show_default to be a string was added in Click 7.0',
-    )
     def test_defaults(self):
         """Validate formatting of user documented defaults."""
 
@@ -204,9 +200,6 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
-    @unittest.skipIf(
-        ext.CLICK_VERSION < (7, 0), 'The hidden flag was added in Click 7.0'
-    )
     def test_hidden(self):
         """Validate a `click.Command` with the `hidden` flag."""
 
@@ -691,9 +684,6 @@ class CustomMultiCommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
-    @unittest.skipIf(
-        ext.CLICK_VERSION < (7, 0), 'The hidden flag was added in Click 7.0'
-    )
     def test_hidden(self):
         """Ensure 'hidden' subcommands are not shown."""
 

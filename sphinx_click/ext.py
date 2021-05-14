@@ -11,7 +11,6 @@ from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
 
 LOG = logging.getLogger(__name__)
-CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
 
 NESTED_FULL = 'full'
 NESTED_SHORT = 'short'
@@ -221,11 +220,7 @@ def _format_subcommand(command):
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
-    # click 7.0 stopped setting short_help by default
-    if CLICK_VERSION < (7, 0):
-        short_help = command.short_help
-    else:
-        short_help = command.get_short_help_str()
+    short_help = command.get_short_help_str()
 
     if short_help:
         yield ''
@@ -276,7 +271,7 @@ def _filter_commands(ctx, commands=None):
 
 def _format_command(ctx, nested, commands=None):
     """Format the output of `click.Command`."""
-    if CLICK_VERSION >= (7, 0) and ctx.command.hidden:
+    if ctx.command.hidden:
         return
 
     # description
@@ -340,7 +335,7 @@ def _format_command(ctx, nested, commands=None):
 
     for command in commands:
         # Don't show hidden subcommands
-        if CLICK_VERSION >= (7, 0) and command.hidden:
+        if command.hidden:
             continue
 
         for line in _format_subcommand(command):
@@ -432,7 +427,7 @@ class ClickDirective(rst.Directive):
         """
         ctx = click.Context(command, info_name=name, parent=parent)
 
-        if CLICK_VERSION >= (7, 0) and command.hidden:
+        if command.hidden:
             return []
 
         # Title
