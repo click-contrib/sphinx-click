@@ -18,9 +18,6 @@ stages:
   - deploy
 jobs:
   include:
-    - stage: test
-      python: pypy
-      dist: trusty
     - stage: deploy
       python: 3.6
       install: skip  # no tests, no depedencies needed
