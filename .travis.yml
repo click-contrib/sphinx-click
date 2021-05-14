@@ -1,34 +1,35 @@
+---
 language: python
 cache: pip
 python:
-- 2.7
-- 3.5
-- 3.6
-- 3.7
+  - 3.6
+  - 3.7
+  - 3.8
+  - 3.9
 install:
-- pip install tox-travis
-- pip install codecov
+  - pip install tox-travis
+  - pip install codecov
 script:
-- tox
+  - tox
 after_success:
-- codecov
+  - codecov
 stages:
-- test
-- deploy
+  - test
+  - deploy
 jobs:
   include:
-  - stage: test
-    python: pypy
-    dist: trusty
-  - stage: deploy
-    python: 3.6
-    install: skip  # no tests, no depedencies needed
-    script: skip  # we're not running tests
-    deploy:
-      provider: pypi
-      user: stephenfin
-      password:
-        secure: "VhbttK0qaGjz7ISIUEAVxPEn8Qo5vu0kRT97C9WykI7BkrkceuSj7c+neCFlXpsUm3VnyzmUgYzDMHBI/EbmzrsX48lTC0GKhDpEBV/gxVmWE+2tdSqYXC1yyBbMFhEm7ygCle8RQomAptWO2C7lcoYazvwT8kWngi15/KKzgUizC5lqiv2VyW8kzPg9qTSGft0IUAA8vVYjlCIlgYVcpk3tHSzOvedsrGd6XZEPQlGtDdeUiDHQ2usxpdOKWJ+Mq6nxpwqwOHvPUB2WvWoYFKfZZrESf9EpnuUrc5JFTbUN9k1RUnsW9DAcg/qNA37vFK1hyGT5RDNCQr90g+j7cUtYicOLA6nnzHE3ccH9oFVCx5gNs1IWEES7hpfMDIqHR5EQy6ez5mzjb8EDHZn+mxjHeSL45kECGiDwrrbqXsfFXIZtc+stX8RHRJupx6wSO+hjbkQvIDdWWeAw8nEhWqHq4LPNM/5S3ZUUx0/YyYME0tJ5nr6U1zNzVjQ3cumjq8bmQbZKd80/X/a9dc9hjFfD3gIyKL7mvwnb5/igBTdk+ymhyUMxAhX0Sx94eZpVd4nXCVSTLCwVMel+z2wRU/hWQurNUhtSv7lZ4Y1/88HsbQ+aB98j8EtwV59IsCSsUUQdTtiYOcwUKZqrVRm+cWD2heT5eBMyB1d+BYjLEWY="
-      on:
-        tags: true
-      distributions: sdist bdist_wheel
+    - stage: test
+      python: pypy
+      dist: trusty
+    - stage: deploy
+      python: 3.6
+      install: skip  # no tests, no depedencies needed
+      script: skip  # we're not running tests
+      deploy:
+        provider: pypi
+        user: stephenfin
+        password:
+          secure: "VhbttK0qaGjz7ISIUEAVxPEn8Qo5vu0kRT97C9WykI7BkrkceuSj7c+neCFlXpsUm3VnyzmUgYzDMHBI/EbmzrsX48lTC0GKhDpEBV/gxVmWE+2tdSqYXC1yyBbMFhEm7ygCle8RQomAptWO2C7lcoYazvwT8kWngi15/KKzgUizC5lqiv2VyW8kzPg9qTSGft0IUAA8vVYjlCIlgYVcpk3tHSzOvedsrGd6XZEPQlGtDdeUiDHQ2usxpdOKWJ+Mq6nxpwqwOHvPUB2WvWoYFKfZZrESf9EpnuUrc5JFTbUN9k1RUnsW9DAcg/qNA37vFK1hyGT5RDNCQr90g+j7cUtYicOLA6nnzHE3ccH9oFVCx5gNs1IWEES7hpfMDIqHR5EQy6ez5mzjb8EDHZn+mxjHeSL45kECGiDwrrbqXsfFXIZtc+stX8RHRJupx6wSO+hjbkQvIDdWWeAw8nEhWqHq4LPNM/5S3ZUUx0/YyYME0tJ5nr6U1zNzVjQ3cumjq8bmQbZKd80/X/a9dc9hjFfD3gIyKL7mvwnb5/igBTdk+ymhyUMxAhX0Sx94eZpVd4nXCVSTLCwVMel+z2wRU/hWQurNUhtSv7lZ4Y1/88HsbQ+aB98j8EtwV59IsCSsUUQdTtiYOcwUKZqrVRm+cWD2heT5eBMyB1d+BYjLEWY="
+        on:
+          tags: true
+        distributions: sdist bdist_wheel
