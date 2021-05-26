@@ -213,7 +213,9 @@ def _format_envvar(param: Union[Option, Argument]) -> str:
 
 def _format_envvars(ctx: Context) -> str:
     """Format all envvars for a `click.Command`."""
-    params = [x for x in ctx.command.params if getattr(x, 'envvar')]
+    params = [
+        x for x in ctx.command.params if isinstance(x, (Option, Argument)) and x.envvar
+    ]
 
     for param in params:
         yield '.. _{command_name}-{param_name}-{envvar}:'.format(
