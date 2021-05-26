@@ -1,12 +1,23 @@
 import re
 import traceback
 import warnings
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import click
+from click.core import Argument
+from click.core import Command
+from click.core import Context
+from click.core import Group
+from click.core import Option
 from docutils import nodes
+from docutils import statemachine
+from docutils.nodes import section
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
-from docutils import statemachine
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
 
@@ -19,17 +30,17 @@ NESTED_NONE = 'none'
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
 
-def _indent(text, level=1):
+def _indent(text: str, level=1) -> str:
     prefix = ' ' * (4 * level)
 
-    def prefixed_lines():
+    def prefixed_lines() -> str:
         for line in text.splitlines(True):
             yield (prefix + line if line.strip() else line)
 
     return ''.join(prefixed_lines())
 
 
-def _get_usage(ctx):
+def _get_usage(ctx: Context) -> str:
     """Alternative, non-prefixed version of 'get_usage'."""
     formatter = ctx.make_formatter()
     pieces = ctx.command.collect_usage_pieces(ctx)
@@ -37,7 +48,7 @@ def _get_usage(ctx):
     return formatter.getvalue().rstrip('\n')
 
 
-def _get_help_record(opt):
+def _get_help_record(opt: Option) -> Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -48,7 +59,7 @@ def _get_help_record(opt):
     [1] http://www.sphinx-doc.org/en/stable/domains.html#directive-option
     """
 
-    def _write_opts(opts):
+    def _write_opts(opts: List[str]) -> str:
         rv, _ = click.formatting.join_options(opts)
         if not opt.is_flag and not opt.count:
             name = opt.name
@@ -101,7 +112,7 @@ def _get_help_record(opt):
     return ', '.join(rv), '\n'.join(out)
 
 
-def _format_description(ctx):
+def _format_description(ctx: Context) -> str:
     """Format the description for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -127,7 +138,7 @@ def _format_description(ctx):
     yield ''
 
 
-def _format_usage(ctx):
+def _format_usage(ctx: Context) -> str:
     """Format the usage for a `click.Command`."""
     yield '.. code-block:: shell'
     yield ''
@@ -136,20 +147,20 @@ def _format_usage(ctx):
     yield ''
 
 
-def _format_option(opt):
+def _format_option(opt: Option) -> str:
     """Format the output for a `click.Option`."""
-    opt = _get_help_record(opt)
+    opt_help = _get_help_record(opt)
 
-    yield '.. option:: {}'.format(opt[0])
-    if opt[1]:
+    yield '.. option:: {}'.format(opt_help[0])
+    if opt_help[1]:
         yield ''
         for line in statemachine.string2lines(
-            ANSI_ESC_SEQ_RE.sub('', opt[1]), tab_width=4, convert_whitespace=True
+            ANSI_ESC_SEQ_RE.sub('', opt_help[1]), tab_width=4, convert_whitespace=True
         ):
             yield _indent(line)
 
 
-def _format_options(ctx):
+def _format_options(ctx: Context) -> str:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
     params = [
@@ -164,7 +175,7 @@ def _format_options(ctx):
         yield ''
 
 
-def _format_argument(arg):
+def _format_argument(arg: Argument) -> str:
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
@@ -175,7 +186,7 @@ def _format_argument(arg):
     )
 
 
-def _format_arguments(ctx):
+def _format_arguments(ctx: Context) -> str:
     """Format all `click.Argument` for a `click.Command`."""
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
 
@@ -185,7 +196,7 @@ def _format_arguments(ctx):
         yield ''
 
 
-def _format_envvar(param):
+def _format_envvar(param: Union[Option, Argument]) -> str:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
     yield '   :noindex:'
@@ -200,7 +211,7 @@ def _format_envvar(param):
     yield _indent('Provide a default for :option:`{}`'.format(param_ref))
 
 
-def _format_envvars(ctx):
+def _format_envvars(ctx: Context) -> str:
     """Format all envvars for a `click.Command`."""
     params = [x for x in ctx.command.params if getattr(x, 'envvar')]
 
@@ -216,7 +227,7 @@ def _format_envvars(ctx):
         yield ''
 
 
-def _format_subcommand(command):
+def _format_subcommand(command: Command) -> str:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
@@ -230,7 +241,7 @@ def _format_subcommand(command):
             yield _indent(line)
 
 
-def _format_epilog(ctx):
+def _format_epilog(ctx: Context) -> str:
     """Format the epilog for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -256,7 +267,7 @@ def _get_lazyload_commands(multicommand):
     return commands
 
 
-def _filter_commands(ctx, commands=None):
+def _filter_commands(ctx: Context, commands=None):
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
     if not lookup and isinstance(ctx.command, click.MultiCommand):
@@ -269,7 +280,7 @@ def _filter_commands(ctx, commands=None):
     return [lookup[name] for name in names if name in lookup]
 
 
-def _format_command(ctx, nested, commands=None):
+def _format_command(ctx: Context, nested, commands=None):
     """Format the output of `click.Command`."""
     if ctx.command.hidden:
         return
@@ -343,10 +354,8 @@ def _format_command(ctx, nested, commands=None):
         yield ''
 
 
-def nested(argument):
-    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE)
-    if not argument:
-        return None
+def nested(argument: Optional[str]) -> Optional[str]:
+    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE, None)
 
     if argument not in values:
         raise ValueError(
@@ -368,11 +377,8 @@ class ClickDirective(rst.Directive):
         'show-nested': directives.flag,
     }
 
-    def _load_module(self, module_path):
+    def _load_module(self, module_path: str) -> Union[Command, Group]:
         """Load the module."""
-        # __import__ will fail on unicode,
-        # so we ensure module path is a string here.
-        module_path = str(module_path)
 
         try:
             module_name, attr_name = module_path.split(':', 1)
@@ -401,16 +407,22 @@ class ClickDirective(rst.Directive):
 
         parser = getattr(mod, attr_name)
 
-        if not isinstance(parser, click.BaseCommand):
+        if not isinstance(parser, (click.Command, click.Group)):
             raise self.error(
-                '"{}" of type "{}" is not derived from '
+                '"{}" of type "{}" is not click.Command or click.Group.'
                 '"click.BaseCommand"'.format(type(parser), module_path)
             )
         return parser
 
     def _generate_nodes(
-        self, name, command, parent, nested, commands=None, semantic_group=False
-    ):
+        self,
+        name: str,
+        command: Command,
+        parent,
+        nested: str,
+        commands=None,
+        semantic_group=False,
+    ) -> List[section]:
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -480,7 +492,7 @@ class ClickDirective(rst.Directive):
 
         return [section]
 
-    def run(self):
+    def run(self) -> Iterable[section]:
         self.env = self.state.document.settings.env
 
         command = self._load_module(self.arguments[0])
