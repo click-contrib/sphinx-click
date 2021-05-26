@@ -1,15 +1,18 @@
 import inspect
 import re
 import traceback
+import typing as ty
 import warnings
 
 import click
 from docutils import nodes
+from docutils import statemachine
+from docutils.nodes import section
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
-from docutils import statemachine
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
+from sphinx import application
 
 LOG = logging.getLogger(__name__)
 
@@ -20,25 +23,25 @@ NESTED_NONE = 'none'
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
 
-def _indent(text, level=1):
+def _indent(text: str, level: int = 1) -> str:
     prefix = ' ' * (4 * level)
 
-    def prefixed_lines():
+    def prefixed_lines() -> ty.Generator[str, None, None]:
         for line in text.splitlines(True):
             yield (prefix + line if line.strip() else line)
 
     return ''.join(prefixed_lines())
 
 
-def _get_usage(ctx):
+def _get_usage(ctx: click.Context) -> str:
     """Alternative, non-prefixed version of 'get_usage'."""
     formatter = ctx.make_formatter()
     pieces = ctx.command.collect_usage_pieces(ctx)
     formatter.write_usage(ctx.command_path, ' '.join(pieces), prefix='')
-    return formatter.getvalue().rstrip('\n')
+    return formatter.getvalue().rstrip('\n')  # type: ignore
 
 
-def _get_help_record(opt):
+def _get_help_record(opt: click.Option) -> ty.Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -49,14 +52,14 @@ def _get_help_record(opt):
     [1] http://www.sphinx-doc.org/en/stable/domains.html#directive-option
     """
 
-    def _write_opts(opts):
+    def _write_opts(opts: ty.List[str]) -> str:
         rv, _ = click.formatting.join_options(opts)
         if not opt.is_flag and not opt.count:
             name = opt.name
             if opt.metavar:
                 name = opt.metavar.lstrip('<[{($').rstrip('>]})$')
             rv += ' <{}>'.format(name)
-        return rv
+        return rv  # type: ignore
 
     rv = [_write_opts(opt.opts)]
     if opt.secondary_opts:
@@ -101,7 +104,7 @@ def _get_help_record(opt):
     return ', '.join(rv), '\n'.join(out)
 
 
-def _format_help(help_string):
+def _format_help(help_string: str) -> ty.Generator[str, None, None]:
     help_string = inspect.cleandoc(ANSI_ESC_SEQ_RE.sub('', help_string))
 
     bar_enabled = False
@@ -118,7 +121,7 @@ def _format_help(help_string):
     yield ''
 
 
-def _format_description(ctx):
+def _format_description(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the description for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -129,7 +132,7 @@ def _format_description(ctx):
         yield from _format_help(help_string)
 
 
-def _format_usage(ctx):
+def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the usage for a `click.Command`."""
     yield '.. code-block:: shell'
     yield ''
@@ -138,20 +141,20 @@ def _format_usage(ctx):
     yield ''
 
 
-def _format_option(opt):
+def _format_option(opt: click.Option) -> ty.Generator[str, None, None]:
     """Format the output for a `click.Option`."""
-    opt = _get_help_record(opt)
+    opt_help = _get_help_record(opt)
 
-    yield '.. option:: {}'.format(opt[0])
-    if opt[1]:
+    yield '.. option:: {}'.format(opt_help[0])
+    if opt_help[1]:
         yield ''
         for line in statemachine.string2lines(
-            ANSI_ESC_SEQ_RE.sub('', opt[1]), tab_width=4, convert_whitespace=True
+            ANSI_ESC_SEQ_RE.sub('', opt_help[1]), tab_width=4, convert_whitespace=True
         ):
             yield _indent(line)
 
 
-def _format_options(ctx):
+def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
     params = [
@@ -166,7 +169,7 @@ def _format_options(ctx):
         yield ''
 
 
-def _format_argument(arg):
+def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
@@ -177,7 +180,7 @@ def _format_argument(arg):
     )
 
 
-def _format_arguments(ctx):
+def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Argument` for a `click.Command`."""
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
 
@@ -187,7 +190,9 @@ def _format_arguments(ctx):
         yield ''
 
 
-def _format_envvar(param):
+def _format_envvar(
+    param: ty.Union[click.Option, click.Argument]
+) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
     yield '   :noindex:'
@@ -202,9 +207,9 @@ def _format_envvar(param):
     yield _indent('Provide a default for :option:`{}`'.format(param_ref))
 
 
-def _format_envvars(ctx):
+def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all envvars for a `click.Command`."""
-    params = [x for x in ctx.command.params if getattr(x, 'envvar')]
+    params = [x for x in ctx.command.params if x.envvar]
 
     for param in params:
         yield '.. _{command_name}-{param_name}-{envvar}:'.format(
@@ -218,7 +223,7 @@ def _format_envvars(ctx):
         yield ''
 
 
-def _format_subcommand(command):
+def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
@@ -232,7 +237,7 @@ def _format_subcommand(command):
             yield _indent(line)
 
 
-def _format_epilog(ctx):
+def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the epilog for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -242,7 +247,7 @@ def _format_epilog(ctx):
         yield from _format_help(ctx.command.epilog)
 
 
-def _get_lazyload_commands(ctx):
+def _get_lazyload_commands(ctx: click.Context) -> ty.Dict[str, click.Command]:
     commands = {}
     for command in ctx.command.list_commands(ctx):
         commands[command] = ctx.command.get_command(ctx.command, command)
@@ -250,7 +255,10 @@ def _get_lazyload_commands(ctx):
     return commands
 
 
-def _filter_commands(ctx, commands=None):
+def _filter_commands(
+    ctx: click.Context,
+    commands: ty.Optional[ty.List[str]] = None,
+) -> ty.List[click.Command]:
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
     if not lookup and isinstance(ctx.command, click.MultiCommand):
@@ -259,14 +267,17 @@ def _filter_commands(ctx, commands=None):
     if commands is None:
         return sorted(lookup.values(), key=lambda item: item.name)
 
-    names = [name.strip() for name in commands.split(',')]
-    return [lookup[name] for name in names if name in lookup]
+    return [lookup[command] for command in commands if command in lookup]
 
 
-def _format_command(ctx, nested, commands=None):
+def _format_command(
+    ctx: click.Context,
+    nested: str,
+    commands: ty.Optional[ty.List[str]] = None,
+) -> ty.Generator[str, None, None]:
     """Format the output of `click.Command`."""
     if ctx.command.hidden:
-        return
+        return None
 
     # description
 
@@ -321,26 +332,24 @@ def _format_command(ctx, nested, commands=None):
     if nested in (NESTED_FULL, NESTED_NONE):
         return
 
-    commands = _filter_commands(ctx, commands)
+    command_objs = _filter_commands(ctx, commands)
 
-    if commands:
+    if command_objs:
         yield '.. rubric:: Commands'
         yield ''
 
-    for command in commands:
+    for command_obj in command_objs:
         # Don't show hidden subcommands
-        if command.hidden:
+        if command_obj.hidden:
             continue
 
-        for line in _format_subcommand(command):
+        for line in _format_subcommand(command_obj):
             yield line
         yield ''
 
 
-def nested(argument):
-    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE)
-    if not argument:
-        return None
+def nested(argument: ty.Optional[str]) -> ty.Optional[str]:
+    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE, None)
 
     if argument not in values:
         raise ValueError(
@@ -362,11 +371,8 @@ class ClickDirective(rst.Directive):
         'show-nested': directives.flag,
     }
 
-    def _load_module(self, module_path):
+    def _load_module(self, module_path: str) -> ty.Union[click.Command, click.Group]:
         """Load the module."""
-        # __import__ will fail on unicode,
-        # so we ensure module path is a string here.
-        module_path = str(module_path)
 
         try:
             module_name, attr_name = module_path.split(':', 1)
@@ -395,16 +401,22 @@ class ClickDirective(rst.Directive):
 
         parser = getattr(mod, attr_name)
 
-        if not isinstance(parser, click.BaseCommand):
+        if not isinstance(parser, (click.Command, click.Group)):
             raise self.error(
-                '"{}" of type "{}" is not derived from '
+                '"{}" of type "{}" is not click.Command or click.Group.'
                 '"click.BaseCommand"'.format(type(parser), module_path)
             )
         return parser
 
     def _generate_nodes(
-        self, name, command, parent, nested, commands=None, semantic_group=False
-    ):
+        self,
+        name: str,
+        command: click.Command,
+        parent: ty.Optional[click.Context],
+        nested: str,
+        commands: ty.Optional[ty.List[str]] = None,
+        semantic_group: bool = False,
+    ) -> ty.List[section]:
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -416,7 +428,7 @@ class ClickDirective(rst.Directive):
         :param commands: Display only listed commands or skip the section if
             empty
         :param semantic_group: Display command as title and description for
-            CommandCollection.
+            `click.CommandCollection`.
         :returns: A list of nested docutil nodes
         """
         ctx = click.Context(command, info_name=name, parent=parent)
@@ -474,7 +486,7 @@ class ClickDirective(rst.Directive):
 
         return [section]
 
-    def run(self):
+    def run(self) -> ty.Iterable[section]:
         self.env = self.state.document.settings.env
 
         command = self._load_module(self.arguments[0])
@@ -498,12 +510,14 @@ class ClickDirective(rst.Directive):
                 )
                 nested = NESTED_FULL if show_nested else NESTED_SHORT
 
-        commands = self.options.get('commands')
+        commands = [
+            command.strip() for command in self.options.get('commands', '').split(',')
+        ]
 
         return self._generate_nodes(prog_name, command, None, nested, commands)
 
 
-def setup(app):
+def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_directive('click', ClickDirective)
 
     return {

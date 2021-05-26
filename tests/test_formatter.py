@@ -695,7 +695,7 @@ class CommandFilterTestCase(unittest.TestCase):
         """Validate an empty command group."""
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, nested='short', commands=''))
+        output = list(ext._format_command(ctx, nested='short', commands=[]))
 
         self.assertEqual(
             textwrap.dedent(
@@ -715,7 +715,9 @@ class CommandFilterTestCase(unittest.TestCase):
         """Validate the order of commands."""
 
         ctx = self._get_ctx()
-        output = list(ext._format_command(ctx, nested='short', commands='world, hello'))
+        output = list(
+            ext._format_command(ctx, nested='short', commands=['world', 'hello'])
+        )
 
         self.assertEqual(
             textwrap.dedent(
