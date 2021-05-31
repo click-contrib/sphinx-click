@@ -1,6 +1,7 @@
 import re
 import traceback
 import warnings
+from typing import Generator
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -33,7 +34,7 @@ ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 def _indent(text: str, level=1) -> str:
     prefix = ' ' * (4 * level)
 
-    def prefixed_lines() -> str:
+    def prefixed_lines() -> Generator[str]:
         for line in text.splitlines(True):
             yield (prefix + line if line.strip() else line)
 
@@ -112,7 +113,7 @@ def _get_help_record(opt: Option) -> Tuple[str, str]:
     return ', '.join(rv), '\n'.join(out)
 
 
-def _format_description(ctx: Context) -> str:
+def _format_description(ctx: Context) -> Generator[str]:
     """Format the description for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -138,7 +139,7 @@ def _format_description(ctx: Context) -> str:
     yield ''
 
 
-def _format_usage(ctx: Context) -> str:
+def _format_usage(ctx: Context) -> Generator[str]:
     """Format the usage for a `click.Command`."""
     yield '.. code-block:: shell'
     yield ''
@@ -147,7 +148,7 @@ def _format_usage(ctx: Context) -> str:
     yield ''
 
 
-def _format_option(opt: Option) -> str:
+def _format_option(opt: Option) -> Generator[str]:
     """Format the output for a `click.Option`."""
     opt_help = _get_help_record(opt)
 
@@ -160,7 +161,7 @@ def _format_option(opt: Option) -> str:
             yield _indent(line)
 
 
-def _format_options(ctx: Context) -> str:
+def _format_options(ctx: Context) -> Generator[str]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
     params = [
@@ -175,7 +176,7 @@ def _format_options(ctx: Context) -> str:
         yield ''
 
 
-def _format_argument(arg: Argument) -> str:
+def _format_argument(arg: Argument) -> Generator[str]:
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
@@ -186,7 +187,7 @@ def _format_argument(arg: Argument) -> str:
     )
 
 
-def _format_arguments(ctx: Context) -> str:
+def _format_arguments(ctx: Context) -> Generator[str]:
     """Format all `click.Argument` for a `click.Command`."""
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
 
@@ -196,7 +197,7 @@ def _format_arguments(ctx: Context) -> str:
         yield ''
 
 
-def _format_envvar(param: Union[Option, Argument]) -> str:
+def _format_envvar(param: Union[Option, Argument]) -> Generator[str]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
     yield '   :noindex:'
@@ -211,7 +212,7 @@ def _format_envvar(param: Union[Option, Argument]) -> str:
     yield _indent('Provide a default for :option:`{}`'.format(param_ref))
 
 
-def _format_envvars(ctx: Context) -> str:
+def _format_envvars(ctx: Context) -> Generator[str]:
     """Format all envvars for a `click.Command`."""
     params = [
         x for x in ctx.command.params if isinstance(x, (Option, Argument)) and x.envvar
@@ -229,7 +230,7 @@ def _format_envvars(ctx: Context) -> str:
         yield ''
 
 
-def _format_subcommand(command: Command) -> str:
+def _format_subcommand(command: Command) -> Generator[str]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
@@ -243,7 +244,7 @@ def _format_subcommand(command: Command) -> str:
             yield _indent(line)
 
 
-def _format_epilog(ctx: Context) -> str:
+def _format_epilog(ctx: Context) -> Generator[str]:
     """Format the epilog for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
