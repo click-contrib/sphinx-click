@@ -31,7 +31,7 @@ NESTED_NONE = 'none'
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
 
-def _indent(text: str, level=1) -> str:
+def _indent(text: str, level: int = 1) -> str:
     prefix = ' ' * (4 * level)
 
     def prefixed_lines() -> Generator[str]:
