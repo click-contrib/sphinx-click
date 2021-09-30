@@ -511,3 +511,8 @@ class ClickDirective(rst.Directive):
 
 def setup(app):
     app.add_directive('click', ClickDirective)
+
+    return {
+        'parallel_read_safe': False,
+        'parallel_write_safe': False,
+    }
