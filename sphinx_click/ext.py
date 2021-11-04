@@ -1,5 +1,7 @@
 import re
 import traceback
+import typing as ty
+from unittest import mock
 import warnings
 
 import click
@@ -381,8 +383,12 @@ class ClickDirective(rst.Directive):
                 '"{}" is not of format "module:parser"'.format(module_path)
             )
 
+        mocked_modules = {
+            m: mock.MagicMock() for m in self.env.config.click_mock_imports
+        }
         try:
-            mod = __import__(module_name, globals(), locals(), [attr_name])
+            with mock.patch.dict('sys.modules', **mocked_modules):
+                mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
             err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
             if isinstance(exc, SystemExit):
@@ -511,6 +517,7 @@ class ClickDirective(rst.Directive):
 
 def setup(app):
     app.add_directive('click', ClickDirective)
+    app.add_config_value('click_mock_imports', [], 'html', ty.List[str])
 
     return {
         'parallel_read_safe': True,
