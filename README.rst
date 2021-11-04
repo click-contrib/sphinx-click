@@ -2,9 +2,9 @@
 sphinx-click
 ============
 
-.. image:: https://travis-ci.org/click-contrib/sphinx-click.svg?branch=master
-    :target: https://travis-ci.org/click-contrib/sphinx-click
-    :alt: CI Status
+.. image:: https://github.com/click-contrib/sphinx-click/actions/workflows/ci.yaml/badge.svg
+    :target: https://github.com/click-contrib/sphinx-click/actions/workflows/ci.yaml
+    :alt: Build Status
 
 .. image:: https://readthedocs.org/projects/sphinx-click/badge/?version=latest
     :target: https://sphinx-click.readthedocs.io/en/latest/?badge=latest
