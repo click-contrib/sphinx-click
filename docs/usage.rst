@@ -65,6 +65,7 @@ Once enabled, *sphinx-click* enables automatic documentation for
 .. |click.core.BaseCommand| replace:: ``click.core.BaseCommand``
 .. _click.core.BaseCommand: http://click.pocoo.org/6/api/#click.BaseCommand
 
+
 Example
 -------
 
@@ -203,8 +204,32 @@ the application:
 
 assuming the group or command in ``git.git`` is named ``cli``.
 
-Refer to `issue #2 <https://github.com/click-contrib/sphinx-click/issues/2>`__
-for more information.
+Refer to `issue #2`__ for more information.
+
+.. __: https://github.com/click-contrib/sphinx-click/issues/2
+
+
+Mocking missing modules
+-----------------------
+
+.. versionadded:: 3.1.0
+
+.. important::
+
+    This is considered a "power user" feature and should not be used unless
+    necessary. Where possible, all dependencies should be installed.
+
+In some cases, it's simply not possible to install all dependencies for an
+application you wish to document. This is particularly true for dependencies
+that require C extensions or have other non-Python requirements. In these
+cases, you can add the offending module(s) to ``click_mock_imports`` value in
+your ``conf.py`` file. All modules listed in here will be automatically mocked
+out using `unittest.mock`_ module.
+
+Refer to `issue #86`__ for more information.
+
+.. __: https://github.com/click-contrib/sphinx-click/issues/86
 
 .. |CommandCollection| replace:: :code:`CommandCollection`
 .. _CommandCollection: https://click.palletsprojects.com/en/7.x/api/#click.CommandCollection
+.. _unittest.mock: https://docs.python.org/3/library/unittest.mock.html
