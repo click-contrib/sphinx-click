@@ -239,11 +239,18 @@ def _format_epilog(ctx):
     if not ctx.command.epilog:
         return
 
+    bar_enabled = False
     for line in statemachine.string2lines(
         ANSI_ESC_SEQ_RE.sub('', ctx.command.epilog),
         tab_width=4,
         convert_whitespace=True,
     ):
+        if line == '\b':
+            bar_enabled = True
+            continue
+        if line == '':
+            bar_enabled = False
+        line = '| ' + line if bar_enabled else line
         yield line
     yield ''
 
