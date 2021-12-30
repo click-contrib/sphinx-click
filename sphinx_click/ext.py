@@ -101,16 +101,7 @@ def _get_help_record(opt):
     return ', '.join(rv), '\n'.join(out)
 
 
-def _format_description(ctx):
-    """Format the description for a given `click.Command`.
-
-    We parse this as reStructuredText, allowing users to embed rich
-    information in their help messages if they so choose.
-    """
-    help_string = ctx.command.help or ctx.command.short_help
-    if not help_string:
-        return
-
+def _format_help(help_string):
     help_string = ANSI_ESC_SEQ_RE.sub('', help_string)
 
     bar_enabled = False
@@ -125,6 +116,17 @@ def _format_description(ctx):
         line = '| ' + line if bar_enabled else line
         yield line
     yield ''
+
+
+def _format_description(ctx):
+    """Format the description for a given `click.Command`.
+
+    We parse this as reStructuredText, allowing users to embed rich
+    information in their help messages if they so choose.
+    """
+    help_string = ctx.command.help or ctx.command.short_help
+    if help_string:
+        yield from _format_help(help_string)
 
 
 def _format_usage(ctx):
@@ -236,23 +238,8 @@ def _format_epilog(ctx):
     We parse this as reStructuredText, allowing users to embed rich
     information in their help messages if they so choose.
     """
-    if not ctx.command.epilog:
-        return
-
-    bar_enabled = False
-    for line in statemachine.string2lines(
-        ANSI_ESC_SEQ_RE.sub('', ctx.command.epilog),
-        tab_width=4,
-        convert_whitespace=True,
-    ):
-        if line == '\b':
-            bar_enabled = True
-            continue
-        if line == '':
-            bar_enabled = False
-        line = '| ' + line if bar_enabled else line
-        yield line
-    yield ''
+    if ctx.command.epilog:
+        yield from _format_help(ctx.command.epilog)
 
 
 def _get_lazyload_commands(multicommand):
