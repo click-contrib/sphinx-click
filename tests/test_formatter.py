@@ -461,6 +461,52 @@ class GroupTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    def test_no_line_wrapping_epilog(self):
+        r"""Validate behavior of the \b character in an epilog."""
+
+        @click.command(
+            epilog="""
+An epilog containing pre-wrapped text.
+
+\b
+This is
+a paragraph
+without rewrapping.
+
+And this is a paragraph
+that will be rewrapped again.
+"""
+        )
+        def foobar():
+            """A sample command."""
+
+        ctx = click.Context(foobar, info_name='foobar')
+        output = list(ext._format_command(ctx, nested='short'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS]
+
+
+        An epilog containing pre-wrapped text.
+
+        | This is
+        | a paragraph
+        | without rewrapping.
+
+        And this is a paragraph
+        that will be rewrapped again.
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
 
 class NestedCommandsTestCase(unittest.TestCase):
     """Validate ``click.Command`` instances inside ``click.Group`` instances."""
