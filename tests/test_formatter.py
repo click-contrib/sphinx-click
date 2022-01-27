@@ -169,6 +169,14 @@ class CommandTestCase(unittest.TestCase):
             default=lambda: None,
             show_default='Something computed at runtime',
         )
+        @click.option(
+            '--group',
+            default=[('foo', 'bar')],
+            nargs=2,
+            type=click.Tuple([str, str]),
+            multiple=True,
+            show_default=True,
+        )
         def foobar(bar):
             """A sample command."""
             pass
@@ -195,6 +203,10 @@ class CommandTestCase(unittest.TestCase):
         .. option:: --param <param>
 
             :default: Something computed at runtime
+
+        .. option:: --group <group>
+
+            :default: ('foo', 'bar')
         """
             ).lstrip(),
             '\n'.join(output),

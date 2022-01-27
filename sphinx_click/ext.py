@@ -83,7 +83,7 @@ def _get_help_record(opt):
             extras.append(
                 ':default: %s'
                 % (
-                    ', '.join('%s' % d for d in opt.default)
+                    ', '.join(str(d) for d in opt.default)
                     if isinstance(opt.default, (list, tuple))
                     else opt.default,
                 )
