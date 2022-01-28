@@ -60,10 +60,10 @@ Once enabled, *sphinx-click* enables automatic documentation for
    domain`_.
 
 .. _Sphinx directive: http://www.sphinx-doc.org/en/stable/extdev/markupapi.html
-.. _click-based: http://click.pocoo.org/6/
-.. _Sphinx standard domain: http://www.sphinx-doc.org/en/stable/domains.html#the-standard-domain
+.. _click-based: https://click.palletsprojects.com/en/8.0.x
+.. _Sphinx standard domain: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#the-standard-domain
 .. |click.core.BaseCommand| replace:: ``click.core.BaseCommand``
-.. _click.core.BaseCommand: http://click.pocoo.org/6/api/#click.BaseCommand
+.. _click.core.BaseCommand: https://click.palletsprojects.com/en/8.0.x/api/#click.BaseCommand
 
 Example
 -------
