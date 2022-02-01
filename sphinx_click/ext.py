@@ -73,21 +73,21 @@ def _get_help_record(opt):
 
     extras = []
 
-    if opt.default is not None and opt.show_default:
-        if isinstance(opt.show_default, str):
-            # Starting from Click 7.0 this can be a string as well. This is
-            # mostly useful when the default is not a constant and
-            # documentation thus needs a manually written string.
-            extras.append(':default: %s' % opt.show_default)
-        else:
-            extras.append(
-                ':default: %s'
-                % (
-                    ', '.join(str(d) for d in opt.default)
-                    if isinstance(opt.default, (list, tuple))
-                    else opt.default,
-                )
+
+    if isinstance(opt.show_default, str):
+        # Starting from Click 7.0 show_default can be a string. This is
+        # mostly useful when the default is not a constant and
+        # documentation thus needs a manually written string.
+        extras.append(':default: %s' % opt.show_default)
+    elif opt.default is not None and opt.show_default:
+        extras.append(
+            ':default: %s'
+            % (
+                ', '.join(str(d) for d in opt.default)
+                if isinstance(opt.default, (list, tuple))
+                else opt.default,
             )
+        )
 
     if isinstance(opt.type, click.Choice):
         extras.append(':options: %s' % ' | '.join(str(x) for x in opt.type.choices))
