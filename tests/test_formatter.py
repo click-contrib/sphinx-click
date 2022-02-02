@@ -177,6 +177,10 @@ class CommandTestCase(unittest.TestCase):
             multiple=True,
             show_default=True,
         )
+        @click.option(
+            '--only-show-default',
+            show_default="Some default computed at runtime!",
+        )
         def foobar(bar):
             """A sample command."""
             pass
@@ -207,6 +211,10 @@ class CommandTestCase(unittest.TestCase):
         .. option:: --group <group>
 
             :default: ('foo', 'bar')
+
+        .. option:: --only-show-default <only_show_default>
+
+            :default: Some default computed at runtime!
         """
             ).lstrip(),
             '\n'.join(output),
