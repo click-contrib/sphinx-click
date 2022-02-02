@@ -73,7 +73,6 @@ def _get_help_record(opt):
 
     extras = []
 
-
     if isinstance(opt.show_default, str):
         # Starting from Click 7.0 show_default can be a string. This is
         # mostly useful when the default is not a constant and
