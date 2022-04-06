@@ -1,9 +1,11 @@
+import collections.abc
 import inspect
 import functools
 import re
 import traceback
 import typing as ty
 import warnings
+import itertools
 
 try:
     import asyncclick as click
@@ -20,6 +22,7 @@ from sphinx.ext.autodoc import mock
 
 LOG = logging.getLogger(__name__)
 
+NESTED_COMPLETE = 'complete'
 NESTED_FULL = 'full'
 NESTED_SHORT = 'short'
 NESTED_NONE = 'none'
@@ -354,10 +357,42 @@ def _filter_commands(
     return [lookup[command] for command in commands if command in lookup]
 
 
-def _format_command(
+def _format_header(ctx: click.Context) -> ty.Generator[str, None, None]:
+    for line in _format_description(ctx):
+        yield line
+
+    yield '.. _{command_name}:'.format(
+        command_name=_format_command_name(ctx),
+    )
+    yield ''
+    yield '.. program:: {}'.format(ctx.command_path)
+
+
+def _format_subcommand_summary(
     ctx: click.Context,
     commands: ty.Optional[ty.List[str]] = None,
-    show_commands: bool = False,
+) -> ty.Generator[str, None, None]:
+    command_objs = _filter_commands(ctx, commands)
+
+    if command_objs:
+        yield '.. rubric:: Commands'
+        yield ''
+
+    for command_obj in command_objs:
+        # Don't show hidden subcommands
+        if command_obj.hidden:
+            continue
+
+        for line in _format_subcommand(command_obj):
+            yield line
+        yield ''
+
+
+def _format_command(
+    ctx: click.Context,
+    nested: str,
+    commands: ty.Optional[ty.List[str]] = None,
+    hide_header: bool = False,
 ) -> ty.Generator[str, None, None]:
     """Format the output of `click.Command`."""
     if ctx.command.hidden:
@@ -365,10 +400,9 @@ def _format_command(
 
     # description
 
-    for line in _format_description(ctx):
-        yield line
-
-    yield '.. program:: {}'.format(ctx.command_path)
+    if nested == NESTED_NONE or not hide_header:
+        for line in _format_header(ctx):
+            yield line
 
     # usage
 
@@ -413,27 +447,37 @@ def _format_command(
         yield line
 
     # if we're nesting commands, we need to do this slightly differently
-    if not show_commands:
+    if nested in (NESTED_FULL, NESTED_NONE):
         return
 
-    command_objs = _filter_commands(ctx, commands)
+    for line in _format_subcommand_summary(ctx, commands):
+        yield line
 
-    if command_objs:
-        yield '.. rubric:: Commands'
-        yield ''
 
-    for command_obj in command_objs:
-        # Don't show hidden subcommands
-        if command_obj.hidden:
-            continue
+def _format_summary(
+    ctx: click.Context,
+    commands: ty.Optional[ty.List[str]] = None,
+    hide_header: bool = False,
+) -> ty.Generator[str, None, None]:
+    """Format the output of `click.Command`."""
+    if ctx.command.hidden:
+        return
 
-        for line in _format_subcommand(command_obj):
+    if not hide_header:
+        # description
+        for line in _format_header(ctx):
             yield line
-        yield ''
+
+        # usage
+        for line in _format_usage(ctx):
+            yield line
+
+    for line in _format_subcommand_summary(ctx, commands):
+        yield line
 
 
 def nested(argument: ty.Optional[str]) -> ty.Optional[str]:
-    values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE, None)
+    values = (NESTED_COMPLETE, NESTED_FULL, NESTED_SHORT, NESTED_NONE, None)
 
     if argument not in values:
         raise ValueError(
@@ -452,6 +496,7 @@ class ClickDirective(rst.Directive):
         'nested': nested,
         'commands': directives.unchanged,
         'show-nested': directives.flag,
+        'hide-header': directives.flag,
     }
 
     def _load_module(self, module_path: str) -> ty.Union[click.Command, click.Group]:
@@ -500,6 +545,7 @@ class ClickDirective(rst.Directive):
         nested: str,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
+        hide_header: bool = False,
     ) -> ty.List[nodes.section]:
         """Generate the relevant Sphinx nodes.
 
@@ -513,6 +559,7 @@ class ClickDirective(rst.Directive):
             empty
         :param semantic_group: Display command as title and description for
             `click.CommandCollection`.
+        :param hide_header: Hide the title and summary.
         :returns: A list of nested docutil nodes
         """
         ctx = click.Context(command, info_name=name, parent=parent)
@@ -520,58 +567,85 @@ class ClickDirective(rst.Directive):
         if command.hidden:
             return []
 
-        # Title
-
-        section = nodes.section(
-            '',
-            nodes.title(text=name),
-            ids=[nodes.make_id(ctx.command_path)],
-            names=[nodes.fully_normalize_name(ctx.command_path)],
-        )
-
         # Summary
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
+        lines: collections.abc.Iterator[str] = iter(())
+        hide_current_header = hide_header
+        if nested == NESTED_COMPLETE:
+            lines = itertools.chain(lines, _format_summary(ctx, commands, hide_header))
+            nested = NESTED_FULL
+            hide_current_header = True
+
         ctx.meta["sphinx-click-env"] = self.env
         if semantic_group:
-            lines = _format_description(ctx)
+            lines = itertools.chain(lines, _format_description(ctx))
         else:
-            # if we're nesting commands, we need to do this slightly differently
-            show_commands = nested not in (NESTED_FULL, NESTED_NONE)
-            lines = _format_command(ctx, commands, show_commands)
+            lines = itertools.chain(
+                lines, _format_command(ctx, nested, commands, hide_current_header)
+            )
 
         for line in lines:
             LOG.debug(line)
             result.append(line, source_name)
 
-        sphinx_nodes.nested_parse_with_titles(self.state, result, section)
-
         # Subcommands
 
+        subcommand_nodes = []
         if nested == NESTED_FULL:
             if isinstance(command, click.CommandCollection):
                 for source in command.sources:
-                    section.extend(
+                    subcommand_nodes.extend(
                         self._generate_nodes(
                             source.name,
                             source,
                             parent=ctx,
                             nested=nested,
                             semantic_group=True,
+                            hide_header=False,  # Hiding the header should not propagate to children
                         )
                     )
             else:
                 commands = _filter_commands(ctx, commands)
                 for command in commands:
                     parent = ctx if not semantic_group else ctx.parent
-                    section.extend(
+                    subcommand_nodes.extend(
                         self._generate_nodes(
-                            command.name, command, parent=parent, nested=nested
+                            command.name,
+                            command,
+                            parent=parent,
+                            nested=nested,
+                            hide_header=False,  # Hiding the header should not propagate to children
                         )
                     )
 
-        return [section]
+        final_nodes = []
+        if hide_header:
+            final_nodes = subcommand_nodes
+
+            if nested == NESTED_NONE or nested == NESTED_SHORT:
+                section = nodes.paragraph()
+                self.state.nested_parse(result, 0, section)
+                final_nodes.insert(0, section)
+
+        else:
+            # Title
+
+            section = nodes.section(
+                '',
+                nodes.title(text=name),
+                ids=[nodes.make_id(ctx.command_path)],
+                names=[nodes.fully_normalize_name(ctx.command_path)],
+            )
+
+            sphinx_nodes.nested_parse_with_titles(self.state, result, section)
+
+            for node in subcommand_nodes:
+                section.append(node)
+            final_nodes = [section]
+
+        return final_nodes
 
     def run(self) -> ty.Iterable[nodes.section]:
         self.env = self.state.document.settings.env
@@ -584,6 +658,7 @@ class ClickDirective(rst.Directive):
         prog_name = self.options.get('prog')
         show_nested = 'show-nested' in self.options
         nested = self.options.get('nested')
+        hide_header = 'hide-header' in self.options
 
         if show_nested:
             if nested:
@@ -603,7 +678,9 @@ class ClickDirective(rst.Directive):
                 command.strip() for command in self.options.get('commands').split(',')
             ]
 
-        return self._generate_nodes(prog_name, command, None, nested, commands)
+        return self._generate_nodes(
+            prog_name, command, None, nested, commands, False, hide_header
+        )
 
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:

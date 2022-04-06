@@ -32,6 +32,8 @@ class CommandTestCase(unittest.TestCase):
                 """
         A sample command.
 
+        .. _foobar:
+
         .. program:: foobar
         .. code-block:: shell
 
@@ -79,6 +81,8 @@ class CommandTestCase(unittest.TestCase):
             textwrap.dedent(
                 """
         A sample command.
+
+        .. _foobar:
 
         .. program:: foobar
         .. code-block:: shell
@@ -165,6 +169,8 @@ class CommandTestCase(unittest.TestCase):
                 """
         A sample command.
 
+        .. _foobar:
+
         .. program:: foobar
         .. code-block:: shell
 
@@ -217,6 +223,8 @@ class CommandTestCase(unittest.TestCase):
             textwrap.dedent(
                 """
         A sample command.
+
+        .. _foobar:
 
         .. program:: foobar
         .. code-block:: shell
@@ -297,6 +305,8 @@ class CommandTestCase(unittest.TestCase):
 
             my_cli hello --name "Jack"
 
+        .. _hello:
+
         .. program:: hello
         .. code-block:: shell
 
@@ -352,6 +362,8 @@ class CommandTestCase(unittest.TestCase):
 
         We've got red text, blue backgrounds, a
         dash of bold and even some underlined words.
+
+        .. _foobar:
 
         .. program:: foobar
         .. code-block:: shell
@@ -426,6 +438,8 @@ class CommandTestCase(unittest.TestCase):
 
         :param click.core.Context ctx: Click context.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -495,6 +509,8 @@ that will be rewrapped again.
         And this is a paragraph
         that will be rewrapped again.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -552,6 +568,8 @@ class GroupTestCase(unittest.TestCase):
                 """
         A sample command group.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -582,6 +600,8 @@ class GroupTestCase(unittest.TestCase):
             textwrap.dedent(
                 """
         A sample command group.
+
+        .. _cli:
 
         .. program:: cli
         .. code-block:: shell
@@ -657,6 +677,8 @@ class NestedCommandsTestCase(unittest.TestCase):
                 """
         A sample command group.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -686,6 +708,8 @@ class NestedCommandsTestCase(unittest.TestCase):
                 """
         A sample command group.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -709,10 +733,43 @@ class NestedCommandsTestCase(unittest.TestCase):
                 """
         A sample command group.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
             cli [OPTIONS] COMMAND [ARGS]...
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
+    def test_nested_complete(self):
+        """Validate a nested command with 'nested' of 'complete'.
+
+        We should include the contents of 'short' and 'full' formats.
+        """
+
+        ctx = self._get_ctx()
+        output = list(ext._format_command(ctx, nested='complete'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command group.
+
+        .. _cli:
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+
+        .. rubric:: Commands
+
+        .. object:: hello
+
+            A sample command.
         """
             ).lstrip(),
             '\n'.join(output),
@@ -749,6 +806,8 @@ class CommandFilterTestCase(unittest.TestCase):
                 """
         A sample command group.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -770,6 +829,8 @@ class CommandFilterTestCase(unittest.TestCase):
             textwrap.dedent(
                 """
         A sample command group.
+
+        .. _cli:
 
         .. program:: cli
         .. code-block:: shell
@@ -830,6 +891,8 @@ class CustomMultiCommandTestCase(unittest.TestCase):
                 """
         A sample custom multicommand.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -887,6 +950,8 @@ class CustomMultiCommandTestCase(unittest.TestCase):
                 """
         A sample custom multicommand.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -942,6 +1007,8 @@ class CommandCollectionTestCase(unittest.TestCase):
                 """
         A simple CommandCollection.
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -957,6 +1024,8 @@ class CommandCollectionTestCase(unittest.TestCase):
             textwrap.dedent(
                 """
         A simple CommandCollection.
+
+        .. _cli:
 
         .. program:: cli
         .. code-block:: shell
