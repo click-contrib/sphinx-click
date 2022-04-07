@@ -4,6 +4,8 @@ import unittest
 import click
 from sphinx_click import ext
 
+CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
+
 
 class CommandTestCase(unittest.TestCase):
     """Validate basic ``click.Command`` instances."""
@@ -482,10 +484,59 @@ class GroupTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    @unittest.skipIf(
+        CLICK_VERSION < (8, 1), 'Click < 8.1.0 stores the modified help string'
+    )
+    def test_no_truncation(self):
+        r"""Validate behavior when a \b character is present.
+
+        https://click.palletsprojects.com/en/8.1.x/documentation/#truncating-help-texts
+        """
+
+        @click.group()
+        def cli():
+            """First paragraph.
+
+            This is a very long second
+            paragraph and not correctly
+            wrapped but it will be rewrapped.
+            \f
+
+            :param click.core.Context ctx: Click context.
+            """
+            pass
+
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, nested='short'))
+
+        # note that we have an extra newline because we're using
+        # docutils.statemachine.string2lines under the hood, which is
+        # converting the form feed to a newline
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        First paragraph.
+
+        This is a very long second
+        paragraph and not correctly
+        wrapped but it will be rewrapped.
+
+
+        :param click.core.Context ctx: Click context.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS] COMMAND [ARGS]...
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
     def test_no_line_wrapping(self):
         r"""Validate behavior when a \b character is present.
 
-        https://click.palletsprojects.com/en/7.x/documentation/#preventing-rewrapping
+        https://click.palletsprojects.com/en/8.1.x/documentation/#preventing-rewrapping
         """
 
         @click.group()
