@@ -1,3 +1,4 @@
+import inspect
 import re
 import traceback
 import warnings
@@ -101,7 +102,7 @@ def _get_help_record(opt):
 
 
 def _format_help(help_string):
-    help_string = ANSI_ESC_SEQ_RE.sub('', help_string)
+    help_string = inspect.cleandoc(ANSI_ESC_SEQ_RE.sub('', help_string))
 
     bar_enabled = False
     for line in statemachine.string2lines(

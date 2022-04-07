@@ -377,7 +377,6 @@ that will be rewrapped again.
 
             foobar [OPTIONS]
 
-
         An epilog containing pre-wrapped text.
 
         | This is
