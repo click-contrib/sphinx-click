@@ -242,10 +242,10 @@ def _format_epilog(ctx):
         yield from _format_help(ctx.command.epilog)
 
 
-def _get_lazyload_commands(multicommand):
+def _get_lazyload_commands(ctx):
     commands = {}
-    for command in multicommand.list_commands(multicommand):
-        commands[command] = multicommand.get_command(multicommand, command)
+    for command in ctx.command.list_commands(ctx):
+        commands[command] = ctx.command.get_command(ctx.command, command)
 
     return commands
 
@@ -254,7 +254,7 @@ def _filter_commands(ctx, commands=None):
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
     if not lookup and isinstance(ctx.command, click.MultiCommand):
-        lookup = _get_lazyload_commands(ctx.command)
+        lookup = _get_lazyload_commands(ctx)
 
     if commands is None:
         return sorted(lookup.values(), key=lambda item: item.name)
