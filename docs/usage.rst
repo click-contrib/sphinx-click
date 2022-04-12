@@ -245,9 +245,9 @@ for more information.
 .. _CommandCollection: https://click.palletsprojects.com/en/7.x/api/#click.CommandCollection
 .. |program directive| replace:: ``program``
 .. _program directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#directive-program
-.. |option directive| replace:: ``program``
+.. |option directive| replace:: ``option``
 .. _option directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#directive-option
-.. |envvar directive| replace:: ``program``
+.. |envvar directive| replace:: ``envvar``
 .. _envvar directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#directive-envvar
 .. |option role| replace:: ``:option:``
 .. _option role: https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#role-option
