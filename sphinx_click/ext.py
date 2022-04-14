@@ -164,8 +164,26 @@ def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
     yield ''
 
 
-def _format_option(opt: click.Option) -> ty.Generator[str, None, None]:
+def _format_command_name(ctx: click.Context) -> str:
+    command_name: str = ctx.command_path.replace(' ', '-')
+    return command_name
+
+
+def _format_option(
+    ctx: click.Context,
+    opt: click.Option,
+) -> ty.Generator[str, None, None]:
     """Format the output for a `click.Option`."""
+
+    # Add an anchor for each form of option name
+    # For click.option('--flag', '-f', ...) it'll create anchors for "flag" and "f"
+    option_names = list(set([option_name.lstrip('-') for option_name in opt.opts]))
+    for option_name in option_names:
+        yield '.. _{command_name}-{param}:'.format(
+            command_name=_format_command_name(ctx), param=option_name
+        )
+        yield ''
+
     opt_help = _get_help_record(opt)
 
     yield '.. option:: {}'.format(opt_help[0])
@@ -195,13 +213,21 @@ def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     ]
 
     for param in params:
-        for line in _format_option(param):
+        for line in _format_option(ctx, param):
             yield line
         yield ''
 
 
-def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
+def _format_argument(
+    ctx: click.Context,
+    arg: click.Argument,
+) -> ty.Generator[str, None, None]:
     """Format the output of a `click.Argument`."""
+    yield '.. _{command_name}-{param}:'.format(
+        command_name=_format_command_name(ctx), param=arg.human_readable_name
+    )
+    yield ''
+
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
     yield _indent(
@@ -217,15 +243,36 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
 
     for param in params:
-        for line in _format_argument(param):
+        for line in _format_argument(ctx, param):
             yield line
         yield ''
 
 
 def _format_envvar(
-    param: ty.Union[click.Option, click.Argument]
+    ctx: click.Context,
+    param: ty.Union[click.Option, click.Argument],
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
+    command_name = _format_command_name(ctx)
+
+    # Add an anchor for each form of parameter name
+    # For click.option('--flag', '-f', ...) it'll create anchors for "flag" and "f"
+    param_names = sorted(set(param_name.lstrip('-') for param_name in param.opts))
+
+    # Only add the parameter's own name if it's not already present, in whatever case
+    if param.name.upper() not in (
+        name.upper() for name in param_names
+    ):  # Case-insensitive "in" test
+        param_names.append(param.name)
+
+    for param_name in param_names:
+        yield '.. _{command_name}-{param_name}-{envvar}:'.format(
+            command_name=command_name,
+            param_name=param_name,
+            envvar=param.envvar,
+        )
+        yield ''
+
     yield '.. envvar:: {}'.format(param.envvar)
     yield '   :noindex:'
     yield ''
@@ -254,13 +301,7 @@ def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
         params = [x for x in ctx.command.params if x.envvar]
 
     for param in params:
-        yield '.. _{command_name}-{param_name}-{envvar}:'.format(
-            command_name=ctx.command_path.replace(' ', '-'),
-            param_name=param.name,
-            envvar=param.envvar,
-        )
-        yield ''
-        for line in _format_envvar(param):
+        for line in _format_envvar(ctx, param):
             yield line
         yield ''
 
@@ -315,8 +356,8 @@ def _filter_commands(
 
 def _format_command(
     ctx: click.Context,
-    nested: str,
     commands: ty.Optional[ty.List[str]] = None,
+    show_commands: bool = False,
 ) -> ty.Generator[str, None, None]:
     """Format the output of `click.Command`."""
     if ctx.command.hidden:
@@ -372,7 +413,7 @@ def _format_command(
         yield line
 
     # if we're nesting commands, we need to do this slightly differently
-    if nested in (NESTED_FULL, NESTED_NONE):
+    if not show_commands:
         return
 
     command_objs = _filter_commands(ctx, commands)
@@ -496,7 +537,9 @@ class ClickDirective(rst.Directive):
         if semantic_group:
             lines = _format_description(ctx)
         else:
-            lines = _format_command(ctx, nested, commands)
+            # if we're nesting commands, we need to do this slightly differently
+            show_commands = nested not in (NESTED_FULL, NESTED_NONE)
+            lines = _format_command(ctx, commands, show_commands)
 
         for line in lines:
             LOG.debug(line)

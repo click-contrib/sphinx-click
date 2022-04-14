@@ -87,13 +87,19 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _foobar-param:
+
         .. option:: --param <param>
 
             A sample option
 
+        .. _foobar-another:
+
         .. option:: --another <FOO>
 
             Another option
+
+        .. _foobar-choice:
 
         .. option:: --choice <choice>
 
@@ -101,17 +107,23 @@ class CommandTestCase(unittest.TestCase):
 
             :options: Option1 | Option2
 
+        .. _foobar-numeric-choice:
+
         .. option:: --numeric-choice <choice>
 
             A sample option with numeric choices
 
             :options: 1 | 2 | 3
 
+        .. _foobar-flag:
+
         .. option:: --flag
 
             A boolean flag
 
         .. rubric:: Arguments
+
+        .. _foobar-ARG:
 
         .. option:: ARG
 
@@ -126,7 +138,7 @@ class CommandTestCase(unittest.TestCase):
 
             Provide a default for :option:`--param`
 
-        .. _foobar-arg-ARG:
+        .. _foobar-ARG-ARG:
 
         .. envvar:: ARG
            :noindex:
@@ -159,6 +171,8 @@ class CommandTestCase(unittest.TestCase):
             foobar [OPTIONS]
 
         .. rubric:: Options
+
+        .. _foobar-param:
 
         .. option:: --param <param>
 
@@ -211,17 +225,25 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _foobar-num-param:
+
         .. option:: --num-param <num_param>
 
             :default: ``42``
+
+        .. _foobar-param:
 
         .. option:: --param <param>
 
             :default: ``Something computed at runtime``
 
+        .. _foobar-group:
+
         .. option:: --group <group>
 
             :default: ``('foo', 'bar')``
+
+        .. _foobar-only-show-default:
 
         .. option:: --only-show-default <only_show_default>
 
@@ -282,6 +304,8 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _hello-name:
+
         .. option:: --name <name>
 
             **Required** Name to say hello to.
@@ -336,15 +360,21 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _foobar-name:
+
         .. option:: --name <name>
 
             **Required** Name to say hello to.
+
+        .. _foobar-choice:
 
         .. option:: --choice <choice>
 
             A sample option with choices
 
             :options: Option1 | Option2
+
+        .. _foobar-param:
 
         .. option:: --param <param>
 
@@ -472,6 +502,8 @@ that will be rewrapped again.
 
         .. rubric:: Options
 
+        .. _cli-param:
+
         .. option:: --param <param>
 
             An option containing pre-wrapped text.
@@ -558,11 +590,15 @@ class GroupTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _cli-param:
+
         .. option:: --param <param>
 
             A sample option
 
         .. rubric:: Arguments
+
+        .. _cli-ARG:
 
         .. option:: ARG
 
@@ -577,7 +613,7 @@ class GroupTestCase(unittest.TestCase):
 
             Provide a default for :option:`--param`
 
-        .. _cli-arg-ARG:
+        .. _cli-ARG-ARG:
 
         .. envvar:: ARG
            :noindex:
