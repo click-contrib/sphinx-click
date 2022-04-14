@@ -6,13 +6,12 @@ import warnings
 
 import click
 from docutils import nodes
-from docutils import statemachine
-from docutils.nodes import section
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
+from docutils import statemachine
+from sphinx import application
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
-from sphinx import application
 
 LOG = logging.getLogger(__name__)
 
@@ -416,7 +415,7 @@ class ClickDirective(rst.Directive):
         nested: str,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
-    ) -> ty.List[section]:
+    ) -> ty.List[nodes.section]:
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -486,7 +485,7 @@ class ClickDirective(rst.Directive):
 
         return [section]
 
-    def run(self) -> ty.Iterable[section]:
+    def run(self) -> ty.Iterable[nodes.section]:
         self.env = self.state.document.settings.env
 
         command = self._load_module(self.arguments[0])
@@ -510,9 +509,11 @@ class ClickDirective(rst.Directive):
                 )
                 nested = NESTED_FULL if show_nested else NESTED_SHORT
 
-        commands = [
-            command.strip() for command in self.options.get('commands', '').split(',')
-        ]
+        commands = None
+        if self.options.get('commands'):
+            commands = [
+                command.strip() for command in self.options.get('commands').split(',')
+            ]
 
         return self._generate_nodes(prog_name, command, None, nested, commands)
 
