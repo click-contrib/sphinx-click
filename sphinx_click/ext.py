@@ -249,7 +249,7 @@ def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
 def _get_lazyload_commands(ctx: click.Context) -> ty.Dict[str, click.Command]:
     commands = {}
     for command in ctx.command.list_commands(ctx):
-        commands[command] = ctx.command.get_command(ctx.command, command)
+        commands[command] = ctx.command.get_command(ctx, command)
 
     return commands
 
