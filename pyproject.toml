@@ -1,3 +1,27 @@
+[project]
+name = "sphinx-click"
+# NOTE: The only one of these that is truly dynamic is the "version" attribute,
+# but we need to specify the rest of these to keep setuptools happy
+dynamic = [
+    "version",
+    "description",
+    "readme",
+    "requires-python",
+    "license",
+    "authors",
+    "keywords",
+    "classifiers",
+    "urls",
+    "dependencies",
+]
+
+[build-system]
+requires = ["setuptools>=36.6.0", "pbr>=5.7.0"]
+build-backend = "pbr.build"
+
+[tool.setuptools]
+py-modules = []
+
 [tool.black]
 line-length = 88
 target-version = ['py36']
