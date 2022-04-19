@@ -2,6 +2,4 @@
 
 from setuptools import setup
 
-setup(
-    pbr=True,
-)
+setup(pbr=True)
