@@ -2,9 +2,10 @@
 #
 # sphinx-click documentation build configuration file
 
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('../examples'))
 
 # -- General configuration ------------------------------------------------
 
@@ -15,7 +16,7 @@ needs_sphinx = '1.5'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx_click"]
+extensions = ['sphinx_click']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []
