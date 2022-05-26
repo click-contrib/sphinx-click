@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
@@ -26,7 +26,7 @@ jobs:
         python: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # We need history to build the package
         with:
           fetch-depth: 0
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # We need history for release notes
         with:
           fetch-depth: 0
@@ -69,7 +69,7 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # We need history to build the package
         with:
           fetch-depth: 0
