@@ -7,12 +7,12 @@ Install the plugin using `pip`:
 
    $ pip install sphinx-click
 
-Alternatively, install from source by cloning this repo then running
-`setup.py`:
+Alternatively, install from source by cloning this repo then running `pip`
+locally:
 
 .. code-block:: shell
 
-   $ python setup.py install
+   $ pip install .
 
 *sphinx-click* supports both `click`__ and `asyncclick`__. If *asyncclick* is
 found, it will be preferred.

@@ -25,12 +25,12 @@ Install the plugin using `pip`:
 
    $ pip install sphinx-click
 
-Alternatively, install from source by cloning this repo then running
-`setup.py`:
+Alternatively, install from source by cloning this repo then running `pip`
+locally:
 
 .. code-block:: shell
 
-   $ python setup.py install
+   $ pip install .
 
 Usage
 -----
