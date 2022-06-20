@@ -424,6 +424,19 @@ And this is a paragraph
 that will be rewrapped again.
 """
         )
+        @click.option(
+            '--param',
+            help="""An option containing pre-wrapped text.
+
+            \b
+            This is
+            a paragraph
+            without rewrapping.
+
+            And this is a paragraph
+            that will be rewrapped again.
+            """,
+        )
         def cli():
             """A command containing pre-wrapped text.
 
@@ -456,6 +469,19 @@ that will be rewrapped again.
         .. code-block:: shell
 
             cli [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --param <param>
+
+            An option containing pre-wrapped text.
+
+            | This is
+            | a paragraph
+            | without rewrapping.
+
+            And this is a paragraph
+            that will be rewrapped again.
 
         An epilog containing pre-wrapped text.
 

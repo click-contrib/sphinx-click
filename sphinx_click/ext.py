@@ -150,9 +150,16 @@ def _format_option(opt: click.Option) -> ty.Generator[str, None, None]:
     yield '.. option:: {}'.format(opt_help[0])
     if opt_help[1]:
         yield ''
+        bar_enabled = False
         for line in statemachine.string2lines(
             ANSI_ESC_SEQ_RE.sub('', opt_help[1]), tab_width=4, convert_whitespace=True
         ):
+            if line == '\b':
+                bar_enabled = True
+                continue
+            if line == '':
+                bar_enabled = False
+            line = '| ' + line if bar_enabled else line
             yield _indent(line)
 
 
