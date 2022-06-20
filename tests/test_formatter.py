@@ -62,6 +62,11 @@ class CommandTestCase(unittest.TestCase):
             help='A sample option with numeric choices',
             type=click.Choice([1, 2, 3]),
         )
+        @click.option(
+            '--flag',
+            is_flag=True,
+            help='A boolean flag',
+        )
         @click.argument('ARG', envvar='ARG')
         def foobar(bar):
             """A sample command."""
@@ -101,6 +106,10 @@ class CommandTestCase(unittest.TestCase):
             A sample option with numeric choices
 
             :options: 1 | 2 | 3
+
+        .. option:: --flag
+
+            A boolean flag
 
         .. rubric:: Arguments
 
