@@ -356,8 +356,60 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
-    def test_no_line_wrapping_epilog(self):
-        r"""Validate behavior of the \b character in an epilog."""
+    @unittest.skipIf(
+        CLICK_VERSION < (8, 1), 'Click < 8.1.0 stores the modified help string'
+    )
+    def test_no_truncation(self):
+        r"""Validate behavior when a \f character is present.
+
+        https://click.palletsprojects.com/en/8.1.x/documentation/#truncating-help-texts
+        """
+
+        @click.command()
+        def cli():
+            """First paragraph.
+
+            This is a very long second
+            paragraph and not correctly
+            wrapped but it will be rewrapped.
+            \f
+
+            :param click.core.Context ctx: Click context.
+            """
+            pass
+
+        ctx = click.Context(cli, info_name='cli')
+        output = list(ext._format_command(ctx, nested='short'))
+
+        # note that we have an extra newline because we're using
+        # docutils.statemachine.string2lines under the hood, which is
+        # converting the form feed to a newline
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        First paragraph.
+
+        This is a very long second
+        paragraph and not correctly
+        wrapped but it will be rewrapped.
+
+
+        :param click.core.Context ctx: Click context.
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS]
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
+    def test_no_line_wrapping(self):
+        r"""Validate behavior when a \b character is present.
+
+        https://click.palletsprojects.com/en/8.1.x/documentation/#preventing-rewrapping
+        """
 
         @click.command(
             epilog="""
@@ -372,21 +424,38 @@ And this is a paragraph
 that will be rewrapped again.
 """
         )
-        def foobar():
-            """A sample command."""
+        def cli():
+            """A command containing pre-wrapped text.
 
-        ctx = click.Context(foobar, info_name='foobar')
+            \b
+            This is
+            a paragraph
+            without rewrapping.
+
+            And this is a paragraph
+            that will be rewrapped again.
+            """
+            pass
+
+        ctx = click.Context(cli, info_name='cli')
         output = list(ext._format_command(ctx, nested='short'))
 
         self.assertEqual(
             textwrap.dedent(
                 """
-        A sample command.
+        A command containing pre-wrapped text.
 
-        .. program:: foobar
+        | This is
+        | a paragraph
+        | without rewrapping.
+
+        And this is a paragraph
+        that will be rewrapped again.
+
+        .. program:: cli
         .. code-block:: shell
 
-            foobar [OPTIONS]
+            cli [OPTIONS]
 
         An epilog containing pre-wrapped text.
 
@@ -488,99 +557,6 @@ class GroupTestCase(unittest.TestCase):
            :noindex:
 
             Provide a default for :option:`ARG`
-        """
-            ).lstrip(),
-            '\n'.join(output),
-        )
-
-    @unittest.skipIf(
-        CLICK_VERSION < (8, 1), 'Click < 8.1.0 stores the modified help string'
-    )
-    def test_no_truncation(self):
-        r"""Validate behavior when a \b character is present.
-
-        https://click.palletsprojects.com/en/8.1.x/documentation/#truncating-help-texts
-        """
-
-        @click.group()
-        def cli():
-            """First paragraph.
-
-            This is a very long second
-            paragraph and not correctly
-            wrapped but it will be rewrapped.
-            \f
-
-            :param click.core.Context ctx: Click context.
-            """
-            pass
-
-        ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, nested='short'))
-
-        # note that we have an extra newline because we're using
-        # docutils.statemachine.string2lines under the hood, which is
-        # converting the form feed to a newline
-        self.assertEqual(
-            textwrap.dedent(
-                """
-        First paragraph.
-
-        This is a very long second
-        paragraph and not correctly
-        wrapped but it will be rewrapped.
-
-
-        :param click.core.Context ctx: Click context.
-
-        .. program:: cli
-        .. code-block:: shell
-
-            cli [OPTIONS] COMMAND [ARGS]...
-        """
-            ).lstrip(),
-            '\n'.join(output),
-        )
-
-    def test_no_line_wrapping(self):
-        r"""Validate behavior when a \b character is present.
-
-        https://click.palletsprojects.com/en/8.1.x/documentation/#preventing-rewrapping
-        """
-
-        @click.group()
-        def cli():
-            """A sample command group.
-
-            \b
-            This is
-            a paragraph
-            without rewrapping.
-
-            And this is a paragraph
-            that will be rewrapped again.
-            """
-            pass
-
-        ctx = click.Context(cli, info_name='cli')
-        output = list(ext._format_command(ctx, nested='short'))
-
-        self.assertEqual(
-            textwrap.dedent(
-                """
-        A sample command group.
-
-        | This is
-        | a paragraph
-        | without rewrapping.
-
-        And this is a paragraph
-        that will be rewrapped again.
-
-        .. program:: cli
-        .. code-block:: shell
-
-            cli [OPTIONS] COMMAND [ARGS]...
         """
             ).lstrip(),
             '\n'.join(output),
