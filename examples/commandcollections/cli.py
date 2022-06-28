@@ -4,9 +4,11 @@ import click
 
 main = click.Group(
     name='Principal Commands',
-    help="Principal commands that are used in ``cli``.\n\n"
-    "The section name and description are obtained using the name and "
-    "description of the group passed as sources for |CommandCollection|_.",
+    help=(
+        "Principal commands that are used in ``cli``.\n\n"
+        "The section name and description are obtained using the name and "
+        "description of the group passed as sources for |CommandCollection|_."
+    ),
 )
 
 

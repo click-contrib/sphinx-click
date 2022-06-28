@@ -3,6 +3,7 @@ Examples
 
 .. toctree::
    :maxdepth: 1
-   :glob:
 
-   *
+   commands
+   groups
+   commandcollections
