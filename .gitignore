@@ -49,6 +49,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# reno
+RELEASENOTES.rst
+releasenotes/notes/reno.cache
+
 # pbr
 AUTHORS
 ChangeLog
