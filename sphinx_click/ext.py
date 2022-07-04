@@ -218,7 +218,16 @@ def _format_envvar(
 
 def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all envvars for a `click.Command`."""
-    params = [x for x in ctx.command.params if x.envvar]
+
+    auto_envvar_prefix = ctx.auto_envvar_prefix
+    if auto_envvar_prefix is not None:
+        params = []
+        for param in ctx.command.params:
+            if not param.envvar:
+                param.envvar = f"{auto_envvar_prefix}_{param.name.upper()}"
+            params.append(param)
+    else:
+        params = [x for x in ctx.command.params if x.envvar]
 
     for param in params:
         yield '.. _{command_name}-{param_name}-{envvar}:'.format(

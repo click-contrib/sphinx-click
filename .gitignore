@@ -58,3 +58,6 @@ ChangeLog
 
 # vim
 *.swp
+
+# Intellij
+.idea

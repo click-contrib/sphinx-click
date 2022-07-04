@@ -940,3 +940,78 @@ class CommandCollectionTestCase(unittest.TestCase):
             ).lstrip(),
             '\n'.join(output),
         )
+
+
+class AutoEnvvarPrefixTestCase(unittest.TestCase):
+    """Validate ``click auto_envvar_prefix``-setup instances."""
+
+    def test_basics(self):
+        """Validate a click application with ``auto_envvar_prefix`` option enabled."""
+
+        @click.command(
+            context_settings={"auto_envvar_prefix": "PREFIX"},
+        )
+        @click.option('--param', help='Help for param')
+        @click.option('--other-param', help='Help for other-param')
+        @click.option(
+            '--param-with-explicit-envvar',
+            help='Help for param-with-explicit-envvar',
+            envvar="EXPLICIT_ENVVAR",
+        )
+        def cli_with_auto_envvars():
+            """A simple CLI with auto-env vars ."""
+
+        cli = cli_with_auto_envvars
+        ctx = click.Context(cli, info_name='cli', auto_envvar_prefix="PREFIX")
+        output = list(ext._format_command(ctx, nested='full'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A simple CLI with auto-env vars .
+
+        .. program:: cli
+        .. code-block:: shell
+
+            cli [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --param <param>
+
+            Help for param
+
+        .. option:: --other-param <other_param>
+
+            Help for other-param
+
+        .. option:: --param-with-explicit-envvar <param_with_explicit_envvar>
+
+            Help for param-with-explicit-envvar
+
+        .. rubric:: Environment variables
+
+        .. _cli-param-PREFIX_PARAM:
+
+        .. envvar:: PREFIX_PARAM
+           :noindex:
+
+            Provide a default for :option:`--param`
+
+        .. _cli-other_param-PREFIX_OTHER_PARAM:
+
+        .. envvar:: PREFIX_OTHER_PARAM
+           :noindex:
+
+            Provide a default for :option:`--other-param`
+
+        .. _cli-param_with_explicit_envvar-EXPLICIT_ENVVAR:
+
+        .. envvar:: EXPLICIT_ENVVAR
+           :noindex:
+
+            Provide a default for :option:`--param-with-explicit-envvar`
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
