@@ -1,7 +1,7 @@
 ---
 features:
   - |
-    The ``auto_envvar_prefix`` parameter, which enables automatic environmental
+    The ``auto_envvar_prefix`` parameter, which enables automatic environment
     variables for all parameters in a click application, is now supported. For
     more information on this feature, refer to the `click documentation`__.
 
