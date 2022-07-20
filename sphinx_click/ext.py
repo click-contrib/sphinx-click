@@ -436,7 +436,7 @@ class ClickDirective(rst.Directive):
         maxdepth: int,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
-        current_depth: int = 0
+        current_depth: int = 0,
     ) -> ty.List[nodes.section]:
         """Generate the relevant Sphinx nodes.
 
@@ -495,7 +495,7 @@ class ClickDirective(rst.Directive):
                             nested=nested,
                             maxdepth=maxdepth,
                             semantic_group=True,
-                            current_depth=current_depth + 1
+                            current_depth=current_depth + 1,
                         )
                     )
             else:
@@ -504,7 +504,12 @@ class ClickDirective(rst.Directive):
                     parent = ctx if not semantic_group else ctx.parent
                     section.extend(
                         self._generate_nodes(
-                            command.name, command, parent=parent, nested=nested, maxdepth=maxdepth, current_depth=current_depth + 1
+                            command.name,
+                            command,
+                            parent=parent,
+                            nested=nested,
+                            maxdepth=maxdepth,
+                            current_depth=current_depth + 1,
                         )
                     )
 
@@ -541,7 +546,9 @@ class ClickDirective(rst.Directive):
                 command.strip() for command in self.options.get('commands').split(',')
             ]
 
-        return self._generate_nodes(prog_name, command, None, nested, maxdepth, commands)
+        return self._generate_nodes(
+            prog_name, command, None, nested, maxdepth, commands
+        )
 
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
