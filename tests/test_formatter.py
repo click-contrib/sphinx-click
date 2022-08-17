@@ -213,19 +213,19 @@ class CommandTestCase(unittest.TestCase):
 
         .. option:: --num-param <num_param>
 
-            :default: 42
+            :default: ``42``
 
         .. option:: --param <param>
 
-            :default: Something computed at runtime
+            :default: ``Something computed at runtime``
 
         .. option:: --group <group>
 
-            :default: ('foo', 'bar')
+            :default: ``('foo', 'bar')``
 
         .. option:: --only-show-default <only_show_default>
 
-            :default: Some default computed at runtime!
+            :default: ``Some default computed at runtime!``
         """
             ).lstrip(),
             '\n'.join(output),
@@ -348,7 +348,7 @@ class CommandTestCase(unittest.TestCase):
 
         .. option:: --param <param>
 
-            :default: Something computed at runtime
+            :default: ``Something computed at runtime``
 
         A sample epilog.
         """
