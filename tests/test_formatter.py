@@ -282,6 +282,40 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    def test_show_default(self):
+        """Validate formatting of show_default via context_settings."""
+
+        @click.command(context_settings={"show_default": True})
+        @click.option('--no-set', default=0)
+        @click.option('--set-false', default=0, show_default=False)
+        def foobar():
+            """A sample command."""
+            pass
+
+        ctx = click.Context(foobar, info_name='foobar', show_default=True)
+        output = list(ext._format_command(ctx, nested='short'))
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS]
+
+        .. rubric:: Options
+
+        .. option:: --no-set <no_set>
+
+            :default: ``0``
+
+        .. option:: --set-false <set_false>
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
     def test_hidden(self):
         """Validate a `click.Command` with the `hidden` flag."""
 
