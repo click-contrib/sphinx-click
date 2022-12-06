@@ -40,7 +40,7 @@ Usage
    To document a Click-based application, both the application itself and any
    additional dependencies required by that application **must be installed**.
 
-Enable the plugin in your Sphinx ``conf.py``` file:
+Enable the plugin in your Sphinx ``conf.py`` file:
 
 .. code-block:: python
 
