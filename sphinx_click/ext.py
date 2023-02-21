@@ -399,9 +399,8 @@ class ClickDirective(rst.Directive):
             raise self.error(
                 '"{}" is not of format "module:parser"'.format(module_path)
             )
-        mock_modules = getattr(self.env.config,'click_mock_imports',[])
         try:
-            with mock(mock_modules):
+            with mock(self.env.config.click_mock_imports):
                 mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
             err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
@@ -541,6 +540,7 @@ class ClickDirective(rst.Directive):
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_directive('click', ClickDirective)
+    app.add_config_value('click_mock_imports', [], 'html', ty.List[str])
 
     return {
         'parallel_read_safe': True,
