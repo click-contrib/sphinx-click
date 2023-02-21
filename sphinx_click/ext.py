@@ -15,6 +15,7 @@ from docutils import statemachine
 from sphinx import application
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
+from sphinx.ext.autodoc import mock
 
 LOG = logging.getLogger(__name__)
 
@@ -398,9 +399,10 @@ class ClickDirective(rst.Directive):
             raise self.error(
                 '"{}" is not of format "module:parser"'.format(module_path)
             )
-
+        mock_modules = getattr(self.env.config,'click_mock_imports',[])
         try:
-            mod = __import__(module_name, globals(), locals(), [attr_name])
+            with mock(mock_modules):
+                mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
             err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
             if isinstance(exc, SystemExit):
