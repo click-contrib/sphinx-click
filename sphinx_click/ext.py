@@ -108,6 +108,8 @@ def _get_help_record(opt: click.Option) -> ty.Tuple[str, str]:
 
 def _format_help(help_string: str) -> ty.Generator[str, None, None]:
     help_string = inspect.cleandoc(ANSI_ESC_SEQ_RE.sub('', help_string))
+    # Truncate at "\f" characters, same as click
+    help_string = help_string.partition("\f")[0]
 
     bar_enabled = False
     for line in statemachine.string2lines(
@@ -379,7 +381,6 @@ def nested(argument: ty.Optional[str]) -> ty.Optional[str]:
 
 
 class ClickDirective(rst.Directive):
-
     has_content = False
     required_arguments = 1
     option_spec = {
