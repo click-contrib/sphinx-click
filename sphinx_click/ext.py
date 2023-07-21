@@ -25,6 +25,17 @@ NESTED_NONE = 'none'
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
 
+def _process_lines(event_name):
+    def decorator(func):
+        def process_lines(ctx):
+            lines = list(func(ctx))
+            ctx.meta["sphinx-click-env"].app.events.emit(event_name, ctx, lines)
+            for line in lines:
+                yield line
+        return process_lines
+    return decorator
+
+
 def _indent(text: str, level: int = 1) -> str:
     prefix = ' ' * (4 * level)
 
@@ -123,6 +134,7 @@ def _format_help(help_string: str) -> ty.Generator[str, None, None]:
     yield ''
 
 
+@_process_lines("sphinx-click-process-description")
 def _format_description(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the description for a given `click.Command`.
 
@@ -134,6 +146,7 @@ def _format_description(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield from _format_help(help_string)
 
 
+@_process_lines("sphinx-click-process-usage")
 def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the usage for a `click.Command`."""
     yield '.. code-block:: shell'
@@ -163,6 +176,7 @@ def _format_option(opt: click.Option) -> ty.Generator[str, None, None]:
             yield _indent(line)
 
 
+@_process_lines("sphinx-click-process-options")
 def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
@@ -189,6 +203,7 @@ def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
     )
 
 
+@_process_lines("sphinx-click-process-arguments")
 def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Argument` for a `click.Command`."""
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
@@ -216,6 +231,7 @@ def _format_envvar(
     yield _indent('Provide a default for :option:`{}`'.format(param_ref))
 
 
+@_process_lines("sphinx-click-process-envars")
 def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all envvars for a `click.Command`."""
 
@@ -241,6 +257,7 @@ def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield ''
 
 
+@_process_lines("sphinx-click-process-subcommand")
 def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
@@ -255,6 +272,7 @@ def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
             yield _indent(line)
 
 
+@_process_lines("sphinx-click-process-epilog")
 def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format the epilog for a given `click.Command`.
 
@@ -467,6 +485,7 @@ class ClickDirective(rst.Directive):
         source_name = ctx.command_path
         result = statemachine.ViewList()
 
+        ctx.meta["sphinx-click-env"] = self.env
         if semantic_group:
             lines = _format_description(ctx)
         else:
@@ -539,6 +558,14 @@ class ClickDirective(rst.Directive):
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_directive('click', ClickDirective)
+
+    app.add_event("sphinx-click-process-description")
+    app.add_event("sphinx-click-process-usage")
+    app.add_event("sphinx-click-process-options")
+    app.add_event("sphinx-click-process-arguments")
+    app.add_event("sphinx-click-process-envvars")
+    app.add_event("sphinx-click-process-subcommand")
+    app.add_event("sphinx-click-process-epilog")
 
     return {
         'parallel_read_safe': True,
