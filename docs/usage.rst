@@ -92,6 +92,28 @@ Programs
   __ https://github.com/sphinx-doc/sphinx/issues/880
 
 
+Docstring processing
+--------------------
+
+sphinx-click provides the following additional events:
+
+.. py:function:: sphinx-click-process-description(app, ctx, lines)
+.. py:function:: sphinx-click-process-usage(app, ctx, lines)
+.. py:function:: sphinx-click-process-options(app, ctx, lines)
+.. py:function:: sphinx-click-process-arguments(app, ctx, lines)
+.. py:function:: sphinx-click-process-envvars(app, ctx, lines)
+.. py:function:: sphinx-click-process-epilog(app, ctx, lines)
+
+   :param app: the Sphinx application object
+   :param ctx: the ``click.Context`` object used to generate the description
+   :param lines: the lines of the documentation, see below
+
+Events are emitted when sphinx-click has read and processed part of a
+command's documentation. *lines* is a list of strings -- the lines of the
+documentation that was processed -- that the event handler can
+modify **in place** to change what Sphinx puts into the output
+
+
 Example
 -------
 
