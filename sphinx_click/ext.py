@@ -29,7 +29,12 @@ def _process_lines(event_name):
     def decorator(func):
         def process_lines(ctx):
             lines = list(func(ctx))
-            ctx.meta["sphinx-click-env"].app.events.emit(event_name, ctx, lines)
+            if "sphinx-click-env" in ctx.meta:
+                ctx.meta["sphinx-click-env"].app.events.emit(
+                    event_name,
+                    ctx,
+                    lines
+                )
             for line in lines:
                 yield line
         return process_lines
@@ -257,7 +262,6 @@ def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield ''
 
 
-@_process_lines("sphinx-click-process-subcommand")
 def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
@@ -564,7 +568,6 @@ def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_event("sphinx-click-process-options")
     app.add_event("sphinx-click-process-arguments")
     app.add_event("sphinx-click-process-envvars")
-    app.add_event("sphinx-click-process-subcommand")
     app.add_event("sphinx-click-process-epilog")
 
     return {
