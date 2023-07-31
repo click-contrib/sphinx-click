@@ -379,7 +379,6 @@ def nested(argument: ty.Optional[str]) -> ty.Optional[str]:
 
 
 class ClickDirective(rst.Directive):
-
     has_content = False
     required_arguments = 1
     option_spec = {
