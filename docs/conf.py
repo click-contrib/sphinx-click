@@ -19,9 +19,6 @@ needs_sphinx = '2.0'
 # ones.
 extensions = ['sphinx_click']
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = []
-
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
@@ -63,10 +60,3 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
-
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = []

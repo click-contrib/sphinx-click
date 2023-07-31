@@ -27,3 +27,15 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-docutils
+        args: ['--explicit-package-bases']
+        exclude: |
+          (?x)(
+            docs/.* \
+            | tests/.*
+          )
