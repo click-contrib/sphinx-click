@@ -22,6 +22,12 @@ import click
     help='A boolean flag',
 )
 @click.argument('ARG', envvar='ARG')
-def cli(bar):
+def cli(
+    param: str,
+    another: str,
+    choice: str,
+    numeric_choice: int,
+    flag: bool,
+) -> None:
     """A sample command."""
     pass

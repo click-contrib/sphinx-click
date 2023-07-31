@@ -9,7 +9,7 @@ import click
     is_flag=True,
     help="Output more information about what's going on.",
 )
-def cli():
+def cli(debug: bool) -> None:
     """A sample command group."""
     pass
 
@@ -17,6 +17,6 @@ def cli():
 @cli.command()
 @click.option('--param', envvar='PARAM', help='A sample option')
 @click.option('--another', metavar='[FOO]', help='Another option')
-def hello():
+def hello(param: str, another: str) -> None:
     """A sample command."""
     pass

@@ -13,26 +13,31 @@ main = click.Group(
 
 
 @main.command(help='CMD 1')
-def cmd1():
+def cmd1() -> None:
     print('call cmd 1')
 
 
-helpers = click.Group(name='Helper Commands', help="Helper commands for ``cli``.")
+helpers = click.Group(
+    name='Helper Commands',
+    help="Helper commands for ``cli``.",
+)
 
 
 @helpers.command()
-def cmd2():
+def cmd2() -> None:
     "Helper command that has no option."
     pass
 
 
 @helpers.command()
 @click.option('--user', type=str)
-def cmd3(user):
+def cmd3(user: str) -> None:
     "Helper command with an option."
     pass
 
 
 cli = click.CommandCollection(
-    name='cli', sources=[main, helpers], help='Some general info on ``cli``.'
+    name='cli',
+    sources=[main, helpers],
+    help='Some general info on ``cli``.',
 )
