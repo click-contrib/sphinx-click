@@ -95,7 +95,7 @@ Programs
 Docstring processing
 --------------------
 
-sphinx-click provides the following additional events:
+*sphinx-click* provides the following additional events:
 
 .. py:function:: sphinx-click-process-description(app, ctx, lines)
 .. py:function:: sphinx-click-process-usage(app, ctx, lines)
@@ -111,7 +111,17 @@ sphinx-click provides the following additional events:
 Events are emitted when sphinx-click has read and processed part of a
 command's documentation. *lines* is a list of strings -- the lines of the
 documentation that was processed -- that the event handler can
-modify **in place** to change what Sphinx puts into the output
+modify **in place** to change what Sphinx puts into the output.
+
+.. code-block:: python
+
+    def process_description(app, ctx, lines):
+        """Append some text to the "example" command description."""
+        if ctx.command.name == "example":
+            lines.extend(["Hello, World!", ""])
+
+    def setup(app):
+        app.connect("sphinx-click-process-description", process_description)
 
 
 Example

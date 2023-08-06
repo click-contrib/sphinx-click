@@ -1,4 +1,5 @@
 import inspect
+import functools
 import re
 import traceback
 import typing as ty
@@ -24,10 +25,13 @@ NESTED_NONE = 'none'
 
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
+_T_Formatter = ty.Callable[[click.Context], ty.Generator[str, None, None]]
 
-def _process_lines(event_name):
-    def decorator(func):
-        def process_lines(ctx):
+
+def _process_lines(event_name: str) -> ty.Callable[[_T_Formatter], _T_Formatter]:
+    def decorator(func: _T_Formatter) -> _T_Formatter:
+        @functools.wraps(func)
+        def process_lines(ctx: click.Context) -> ty.Generator[str, None, None]:
             lines = list(func(ctx))
             if "sphinx-click-env" in ctx.meta:
                 ctx.meta["sphinx-click-env"].app.events.emit(
