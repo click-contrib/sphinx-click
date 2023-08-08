@@ -34,14 +34,12 @@ def _process_lines(event_name: str) -> ty.Callable[[_T_Formatter], _T_Formatter]
         def process_lines(ctx: click.Context) -> ty.Generator[str, None, None]:
             lines = list(func(ctx))
             if "sphinx-click-env" in ctx.meta:
-                ctx.meta["sphinx-click-env"].app.events.emit(
-                    event_name,
-                    ctx,
-                    lines
-                )
+                ctx.meta["sphinx-click-env"].app.events.emit(event_name, ctx, lines)
             for line in lines:
                 yield line
+
         return process_lines
+
     return decorator
 
 
