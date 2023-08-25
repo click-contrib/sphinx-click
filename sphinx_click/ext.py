@@ -16,6 +16,7 @@ from docutils import statemachine
 from sphinx import application
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
+from sphinx.ext.autodoc import mock
 
 LOG = logging.getLogger(__name__)
 
@@ -421,9 +422,9 @@ class ClickDirective(rst.Directive):
             raise self.error(
                 '"{}" is not of format "module:parser"'.format(module_path)
             )
-
         try:
-            mod = __import__(module_name, globals(), locals(), [attr_name])
+            with mock(self.env.config.click_mock_imports):
+                mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
             err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
             if isinstance(exc, SystemExit):
@@ -563,6 +564,7 @@ class ClickDirective(rst.Directive):
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_directive('click', ClickDirective)
+    app.add_config_value('click_mock_imports', [], 'html', ty.List[str])
 
     app.add_event("sphinx-click-process-description")
     app.add_event("sphinx-click-process-usage")
