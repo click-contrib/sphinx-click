@@ -16,6 +16,7 @@ from docutils import statemachine
 from sphinx import application
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
+from sphinx.ext.autodoc import mock
 
 LOG = logging.getLogger(__name__)
 
@@ -423,7 +424,8 @@ class ClickDirective(rst.Directive):
             )
 
         try:
-            mod = __import__(module_name, globals(), locals(), [attr_name])
+            with mock(self.env.config.sphinx_click_mock_imports):
+                mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
             err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
             if isinstance(exc, SystemExit):
@@ -562,6 +564,8 @@ class ClickDirective(rst.Directive):
 
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
+    # Need autodoc to support mocking modules
+    app.setup_extension('sphinx.ext.autodoc')
     app.add_directive('click', ClickDirective)
 
     app.add_event("sphinx-click-process-description")
@@ -570,6 +574,9 @@ def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
     app.add_event("sphinx-click-process-arguments")
     app.add_event("sphinx-click-process-envvars")
     app.add_event("sphinx-click-process-epilog")
+    app.add_config_value(
+        'sphinx_click_mock_imports', lambda config: config.autodoc_mock_imports, 'env'
+    )
 
     return {
         'parallel_read_safe': True,

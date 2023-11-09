@@ -1,12 +1,13 @@
 """The greet example taken from the README."""
 
 import click
+import fake_dependency  # Used to test that mocking works
 
 
 @click.group()
 def greet():
     """A sample command group."""
-    pass
+    fake_dependency.do_stuff("hello!")
 
 
 @greet.command()

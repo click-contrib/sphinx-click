@@ -59,6 +59,12 @@ Once enabled, *sphinx-click* enables automatic documentation for
    their options and their environment variables using the `Sphinx standard
    domain`_.
 
+*sphinx-click* allows for modules to be mocked out using the same method used by
+`sphinx.ext.autodoc`_. Modules to mock while the documentation is being built
+can be specified using the ``sphinx_click_mock_imports`` config value, if specified.
+Otherwise the value of ``autodoc_mock_imports`` is used, following the behavior
+of ``sphinx.ext.autosummary``. The value of this config option should be a list
+of module names; see `sphinx.ext.autodoc`_ for more information.
 
 .. _cross-referencing:
 
@@ -287,3 +293,4 @@ for more information.
 .. _ref role: https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#role-ref
 .. |envvar role| replace:: ``:envvar:``
 .. _envvar role: https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#role-envvar
+.. _sphinx.ext.autodoc: https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_mock_imports
