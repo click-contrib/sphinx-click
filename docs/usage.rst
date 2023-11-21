@@ -41,10 +41,10 @@ Once enabled, *sphinx-click* enables automatic documentation for
      ``full``
        List sub-commands with full documentation.
 
-    ``short``
+     ``short``
        List sub-commands with short documentation.
 
-    ``none``
+     ``none``
        Do not list sub-commands.
 
      Defaults to ``short`` unless ``show-nested`` (deprecated) is set.
