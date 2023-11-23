@@ -409,6 +409,7 @@ class ClickDirective(rst.Directive):
     option_spec = {
         'prog': directives.unchanged_required,
         'nested': nested,
+        'maxdepth': directives.unchanged_required,
         'commands': directives.unchanged,
         'show-nested': directives.flag,
     }
@@ -457,8 +458,10 @@ class ClickDirective(rst.Directive):
         command: click.Command,
         parent: ty.Optional[click.Context],
         nested: str,
+        maxdepth: int,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
+        current_depth: int = 0,
     ) -> ty.List[nodes.section]:
         """Generate the relevant Sphinx nodes.
 
@@ -468,6 +471,7 @@ class ClickDirective(rst.Directive):
         :param command: Instance of `click.Group` or `click.Command`
         :param parent: Instance of `click.Context`, or None
         :param nested: The granularity of subcommand details.
+        :param maxdepth: The maximum depth of recursive subcommands to display.
         :param commands: Display only listed commands or skip the section if
             empty
         :param semantic_group: Display command as title and description for
@@ -506,7 +510,7 @@ class ClickDirective(rst.Directive):
 
         # Subcommands
 
-        if nested == NESTED_FULL:
+        if (maxdepth < 1 or current_depth < maxdepth) and nested == NESTED_FULL:
             if isinstance(command, click.CommandCollection):
                 for source in command.sources:
                     section.extend(
@@ -515,7 +519,9 @@ class ClickDirective(rst.Directive):
                             source,
                             parent=ctx,
                             nested=nested,
+                            maxdepth=maxdepth,
                             semantic_group=True,
+                            current_depth=current_depth + 1,
                         )
                     )
             else:
@@ -524,7 +530,12 @@ class ClickDirective(rst.Directive):
                     parent = ctx if not semantic_group else ctx.parent
                     section.extend(
                         self._generate_nodes(
-                            command.name, command, parent=parent, nested=nested
+                            command.name,
+                            command,
+                            parent=parent,
+                            nested=nested,
+                            maxdepth=maxdepth,
+                            current_depth=current_depth + 1,
                         )
                     )
 
@@ -541,6 +552,7 @@ class ClickDirective(rst.Directive):
         prog_name = self.options.get('prog')
         show_nested = 'show-nested' in self.options
         nested = self.options.get('nested')
+        maxdepth = int(self.options.get('maxdepth') or 0)
 
         if show_nested:
             if nested:
@@ -560,7 +572,9 @@ class ClickDirective(rst.Directive):
                 command.strip() for command in self.options.get('commands').split(',')
             ]
 
-        return self._generate_nodes(prog_name, command, None, nested, commands)
+        return self._generate_nodes(
+            prog_name, command, None, nested, maxdepth, commands
+        )
 
 
 def setup(app: application.Sphinx) -> ty.Dict[str, ty.Any]:
