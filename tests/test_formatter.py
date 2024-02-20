@@ -1075,6 +1075,8 @@ class AutoEnvvarPrefixTestCase(unittest.TestCase):
                 """
         A simple CLI with auto-env vars .
 
+        .. _cli:
+
         .. program:: cli
         .. code-block:: shell
 
@@ -1082,13 +1084,19 @@ class AutoEnvvarPrefixTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _cli-param:
+
         .. option:: --param <param>
 
             Help for param
 
+        .. _cli-other-param:
+
         .. option:: --other-param <other_param>
 
             Help for other-param
+
+        .. _cli-param-with-explicit-envvar:
 
         .. option:: --param-with-explicit-envvar <param_with_explicit_envvar>
 
@@ -1103,12 +1111,16 @@ class AutoEnvvarPrefixTestCase(unittest.TestCase):
 
             Provide a default for :option:`--param`
 
+        .. _cli-other-param-PREFIX_OTHER_PARAM:
+
         .. _cli-other_param-PREFIX_OTHER_PARAM:
 
         .. envvar:: PREFIX_OTHER_PARAM
            :noindex:
 
             Provide a default for :option:`--other-param`
+
+        .. _cli-param-with-explicit-envvar-EXPLICIT_ENVVAR:
 
         .. _cli-param_with_explicit_envvar-EXPLICIT_ENVVAR:
 
