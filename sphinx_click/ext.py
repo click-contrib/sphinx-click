@@ -43,7 +43,7 @@ def _get_usage(ctx: click.Context) -> str:
     return formatter.getvalue().rstrip('\n')  # type: ignore
 
 
-def _get_help_record(opt: click.Option, ctx: click.Context) -> ty.Tuple[str, str]:
+def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -79,10 +79,11 @@ def _get_help_record(opt: click.Option, ctx: click.Context) -> ty.Tuple[str, str
 
     extras = []
 
-    if opt.show_default is not None:
-        show_default = opt.show_default
+    # Changed in version 8.1: The show_default parameter is overridden by Command.show_default, instead of the other way around.
+    if ctx.command.show_default is not None:
+        show_default = ctx.command.show_default
     else:
-        show_default =  ctx.show_default
+        show_default = ctx.show_default
 
     if isinstance(show_default, str):
         # Starting from Click 7.0 show_default can be a string. This is
@@ -148,9 +149,9 @@ def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
     yield ''
 
 
-def _format_option(opt: click.Option, ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_option(ctx: click.Context, opt: click.Option) -> ty.Generator[str, None, None]:
     """Format the output for a `click.Option`."""
-    opt_help = _get_help_record(opt, ctx)
+    opt_help = _get_help_record(ctx, opt)
 
     yield '.. option:: {}'.format(opt_help[0])
     if opt_help[1]:
@@ -178,7 +179,7 @@ def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     ]
 
     for param in params:
-        for line in _format_option(param, ctx):
+        for line in _format_option(ctx, param):
             yield line
         yield ''
 
