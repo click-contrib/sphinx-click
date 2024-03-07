@@ -79,11 +79,6 @@ def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str
 
     extras = []
 
-    grp = click.Group.context_settings
-    print(grp)
-    
-    if grp.show_default is not None:
-        show_default = grp.show_default
     if opt.show_default is not None:
         show_default = opt.show_default
     else:
