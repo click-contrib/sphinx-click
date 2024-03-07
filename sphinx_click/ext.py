@@ -80,7 +80,10 @@ def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str
     extras = []
 
 
-    show_default = ctx.show_default
+    if opt.show_default is not None:
+        show_default = opt.show_default
+    else:
+        show_default =  ctx.show_default
 
     if isinstance(show_default, str):
         # Starting from Click 7.0 show_default can be a string. This is
