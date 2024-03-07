@@ -43,7 +43,7 @@ def _get_usage(ctx: click.Context) -> str:
     return formatter.getvalue().rstrip('\n')  # type: ignore
 
 
-def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str]:
+def _get_help_record(ctx: click.Context, opt: click.Option, grp: click.Group) -> ty.Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -79,7 +79,8 @@ def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str
 
     extras = []
 
-
+    if grp.show_default is not None:
+        show_default = grp.show_default
     if opt.show_default is not None:
         show_default = opt.show_default
     else:
