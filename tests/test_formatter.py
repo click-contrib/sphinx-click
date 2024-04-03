@@ -170,6 +170,57 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    def test_help_argument(self):
+        """Validate a help text for arguments.
+
+        While click only provides the help attribute for options, but not for arguments,
+        it allows customization with subclasses.
+        """
+
+        class CustomArgument(click.Argument):
+            def __init__(self, *args, help=None, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.help = help
+
+        @click.command()
+        @click.option('--option', help='A sample option')
+        @click.argument('ARG', help='A sample argument', cls=CustomArgument)
+        def foobar(bar):
+            """A sample command."""
+            pass
+
+        ctx = click.Context(foobar, info_name='foobar')
+        output = list(ext._format_command(ctx, nested='short'))
+
+        self.assertEqual(
+            textwrap.dedent(
+                """
+        A sample command.
+
+        .. program:: foobar
+        .. code-block:: shell
+
+            foobar [OPTIONS] ARG
+
+        .. rubric:: Options
+
+        .. option:: --option <option>
+
+            A sample option
+
+        .. rubric:: Arguments
+
+        .. option:: ARG
+
+            Required argument
+
+            A sample argument
+
+        """
+            ).lstrip(),
+            '\n'.join(output),
+        )
+
     def test_defaults(self):
         """Validate formatting of user documented defaults."""
 

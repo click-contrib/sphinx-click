@@ -210,6 +210,12 @@ def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
             'Required' if arg.required else 'Optional', '(s)' if arg.nargs != 1 else ''
         )
     )
+    # Subclasses of click.Argument may add a `help` attribute (like typer.main.TyperArgument)
+    if hasattr(arg, 'help'):
+        yield ''
+        help_string = ANSI_ESC_SEQ_RE.sub('', getattr(arg, 'help'))
+        for line in _format_help(help_string):
+            yield _indent(line)
 
 
 @_process_lines("sphinx-click-process-arguments")
