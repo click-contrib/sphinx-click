@@ -533,12 +533,16 @@ class ClickDirective(rst.Directive):
                         )
                     )
             else:
-                commands = _filter_commands(ctx, commands)
-                for command in commands:
+                command_objs = _filter_commands(ctx, commands)
+                for command in command_objs:
                     parent = ctx if not semantic_group else ctx.parent
                     section.extend(
                         self._generate_nodes(
-                            command.name, command, parent=parent, nested=nested
+                            command.name,
+                            command,
+                            parent=parent,
+                            nested=nested,
+                            commands=commands,
                         )
                     )
 
