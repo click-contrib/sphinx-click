@@ -1,4 +1,5 @@
 import pickle
+import sys
 
 from docutils import nodes
 from sphinx import addnodes as sphinx_nodes
@@ -91,6 +92,10 @@ def test_commands(make_app, rootdir):
 
 
 def test_nested_full(make_app, rootdir):
+    # Make sure this sphinx-click reloads the module from this rootdir.
+    if "greet" in sys.modules:
+        del sys.modules["greet"]
+
     srcdir = rootdir / 'nested-full'
     app = make_app('xml', srcdir=srcdir)
     app.build()
