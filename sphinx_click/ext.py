@@ -23,6 +23,7 @@ LOG = logging.getLogger(__name__)
 NESTED_FULL = 'full'
 NESTED_SHORT = 'short'
 NESTED_NONE = 'none'
+NestedT = ty.Literal['full', 'short', 'none', None]
 
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
@@ -315,7 +316,7 @@ def _filter_commands(
 
 def _format_command(
     ctx: click.Context,
-    nested: str,
+    nested: NestedT,
     commands: ty.Optional[ty.List[str]] = None,
 ) -> ty.Generator[str, None, None]:
     """Format the output of `click.Command`."""
@@ -391,16 +392,16 @@ def _format_command(
         yield ''
 
 
-def nested(argument: ty.Optional[str]) -> ty.Optional[str]:
+def nested(argument: ty.Optional[str]) -> NestedT:
     values = (NESTED_FULL, NESTED_SHORT, NESTED_NONE, None)
 
     if argument not in values:
         raise ValueError(
             "%s is not a valid value for ':nested:'; allowed values: %s"
-            % directives.format_values(values)
+            % directives.format_values(values)  # type: ignore
         )
 
-    return argument
+    return ty.cast(NestedT, argument)
 
 
 class ClickDirective(rst.Directive):
@@ -456,7 +457,7 @@ class ClickDirective(rst.Directive):
         name: str,
         command: click.Command,
         parent: ty.Optional[click.Context],
-        nested: str,
+        nested: NestedT,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
     ) -> ty.List[nodes.section]:
@@ -490,7 +491,7 @@ class ClickDirective(rst.Directive):
 
         # Summary
         source_name = ctx.command_path
-        result = statemachine.ViewList()
+        result = statemachine.StringList()
 
         ctx.meta["sphinx-click-env"] = self.env
         if semantic_group:
@@ -530,7 +531,7 @@ class ClickDirective(rst.Directive):
 
         return [section]
 
-    def run(self) -> ty.Iterable[nodes.section]:
+    def run(self) -> ty.Sequence[nodes.section]:
         self.env = self.state.document.settings.env
 
         command = self._load_module(self.arguments[0])
@@ -538,7 +539,7 @@ class ClickDirective(rst.Directive):
         if 'prog' not in self.options:
             raise self.error(':prog: must be specified')
 
-        prog_name = self.options.get('prog')
+        prog_name = self.options['prog']
         show_nested = 'show-nested' in self.options
         nested = self.options.get('nested')
 
@@ -557,7 +558,7 @@ class ClickDirective(rst.Directive):
         commands = None
         if self.options.get('commands'):
             commands = [
-                command.strip() for command in self.options.get('commands').split(',')
+                command.strip() for command in self.options['commands'].split(',')
             ]
 
         return self._generate_nodes(prog_name, command, None, nested, commands)
