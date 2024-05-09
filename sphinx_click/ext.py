@@ -109,14 +109,14 @@ def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str
         # Starting from Click 7.0 show_default can be a string. This is
         # mostly useful when the default is not a constant and
         # documentation thus needs a manually written string.
-        extras.append(':default: ``%s``' % show_default)
-    elif opt.default is not None and show_default:
+        extras.append(':default: ``%r``' % ANSI_ESC_SEQ_RE.sub('', show_default))
+    elif show_default and opt.default is not None:
         extras.append(
             ':default: ``%s``'
             % (
-                ', '.join(str(d) for d in opt.default)
+                ', '.join(repr(d) for d in opt.default)
                 if isinstance(opt.default, (list, tuple))
-                else opt.default,
+                else repr(opt.default),
             )
         )
 
