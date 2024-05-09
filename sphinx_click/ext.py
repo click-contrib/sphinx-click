@@ -218,9 +218,10 @@ def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
         )
     )
     # Subclasses of click.Argument may add a `help` attribute (like typer.main.TyperArgument)
-    if hasattr(arg, 'help'):
+    help = getattr(arg, 'help', None)
+    if help:
         yield ''
-        help_string = ANSI_ESC_SEQ_RE.sub('', getattr(arg, 'help'))
+        help_string = ANSI_ESC_SEQ_RE.sub('', help)
         for line in _format_help(help_string):
             yield _indent(line)
 
