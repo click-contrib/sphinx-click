@@ -185,6 +185,7 @@ class CommandTestCase(unittest.TestCase):
         @click.command()
         @click.option('--option', help='A sample option')
         @click.argument('ARG', help='A sample argument', cls=CustomArgument)
+        @click.argument('ARG_NO_HELP', cls=CustomArgument)
         def foobar(bar):
             """A sample command."""
             pass
@@ -200,7 +201,7 @@ class CommandTestCase(unittest.TestCase):
         .. program:: foobar
         .. code-block:: shell
 
-            foobar [OPTIONS] ARG
+            foobar [OPTIONS] ARG ARG_NO_HELP
 
         .. rubric:: Options
 
@@ -216,6 +217,10 @@ class CommandTestCase(unittest.TestCase):
 
             A sample argument
 
+
+        .. option:: ARG_NO_HELP
+
+            Required argument
         """
             ).lstrip(),
             '\n'.join(output),
