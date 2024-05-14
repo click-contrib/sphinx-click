@@ -287,6 +287,9 @@ class CommandTestCase(unittest.TestCase):
             '\n'.join(output),
         )
 
+    @unittest.skipIf(
+        CLICK_VERSION < (8, 0), 'Click < 8.0.0 does not support this feature'
+    )
     def test_show_default(self):
         """Validate formatting of show_default via context_settings."""
 
