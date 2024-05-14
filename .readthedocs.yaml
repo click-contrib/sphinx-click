@@ -4,6 +4,8 @@ python:
   install:
     - method: pip
       path: .
+sphinx:
+  builder: "dirhtml"
 build:
   os: "ubuntu-22.04"
   tools:
