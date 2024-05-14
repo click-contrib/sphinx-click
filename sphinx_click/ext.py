@@ -411,7 +411,7 @@ def nested(argument: ty.Optional[str]) -> NestedT:
     if argument not in values:
         raise ValueError(
             "%s is not a valid value for ':nested:'; allowed values: %s"
-            % directives.format_values(values)  # type: ignore
+            % directives.format_values(values)
         )
 
     return ty.cast(NestedT, argument)
