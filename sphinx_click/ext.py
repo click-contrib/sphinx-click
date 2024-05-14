@@ -9,6 +9,7 @@ try:
     import asyncclick as click
 except ImportError:
     import click
+import click.core
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
@@ -63,7 +64,7 @@ def _get_usage(ctx: click.Context) -> str:
     return formatter.getvalue().rstrip('\n')  # type: ignore
 
 
-def _get_help_record(ctx: click.Context, opt: click.Option) -> ty.Tuple[str, str]:
+def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -171,9 +172,9 @@ def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 def _format_option(
-    ctx: click.Context, opt: click.Option
+    ctx: click.Context, opt: click.core.Option
 ) -> ty.Generator[str, None, None]:
-    """Format the output for a `click.Option`."""
+    """Format the output for a `click.core.Option`."""
     opt_help = _get_help_record(ctx, opt)
 
     yield '.. option:: {}'.format(opt_help[0])
@@ -196,10 +197,14 @@ def _format_option(
 def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
+    print(ctx.command.params)
+    for param in ctx.command.params:
+        print(type(param))
+        print(isinstance(param, click.Option))
     params = [
         param
         for param in ctx.command.params
-        if isinstance(param, click.Option) and not getattr(param, 'hidden', False)
+        if isinstance(param, click.core.Option) and not getattr(param, 'hidden', False)
     ]
 
     for param in params:
@@ -238,7 +243,7 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 def _format_envvar(
-    param: ty.Union[click.Option, click.Argument]
+    param: ty.Union[click.core.Option, click.Argument]
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
