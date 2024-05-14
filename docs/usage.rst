@@ -59,13 +59,6 @@ Once enabled, *sphinx-click* enables automatic documentation for
    their options and their environment variables using the `Sphinx standard
    domain`_.
 
-*sphinx-click* allows for modules to be mocked out using the same method used by
-`sphinx.ext.autodoc`_. Modules to mock while the documentation is being built
-can be specified using the ``sphinx_click_mock_imports`` config value, if specified.
-Otherwise the value of ``autodoc_mock_imports`` is used, following the behavior
-of ``sphinx.ext.autosummary``. The value of this config option should be a list
-of module names; see `sphinx.ext.autodoc`_ for more information.
-
 .. _cross-referencing:
 
 Cross-referencing
@@ -97,9 +90,22 @@ Programs
 
   __ https://github.com/sphinx-doc/sphinx/issues/880
 
+.. _mocking:
 
-Docstring processing
---------------------
+Mocking
+-------
+
+*sphinx-click* allows for modules to be mocked out using the same method used by
+`sphinx.ext.autodoc`_. Modules to mock while the documentation is being built
+can be specified using the ``sphinx_click_mock_imports`` config value, if specified.
+Otherwise the value of ``autodoc_mock_imports`` is used, following the behavior
+of ``sphinx.ext.autosummary``. The value of this config option should be a list
+of module names; see `sphinx.ext.autodoc`_ for more information.
+
+.. _events:
+
+Events
+------
 
 *sphinx-click* provides the following additional events:
 
@@ -128,7 +134,6 @@ modify **in place** to change what Sphinx puts into the output.
 
     def setup(app):
         app.connect("sphinx-click-process-description", process_description)
-
 
 Example
 -------
@@ -232,7 +237,6 @@ using *sphinx-click* and the following directive:
 
 This will render the subcommands of each group in different sections, one for each
 group in ``sources``. An example is provided in :doc:`examples/commandcollections`.
-
 
 Modifying ``sys.path``
 ----------------------
