@@ -593,6 +593,8 @@ that will be rewrapped again.
 class GroupTestCase(unittest.TestCase):
     """Validate basic ``click.Group`` instances."""
 
+    maxDiff = None
+
     def test_no_parameters(self):
         """Validate a `click.Group` with no parameters.
 
@@ -684,6 +686,8 @@ class GroupTestCase(unittest.TestCase):
 
 class NestedCommandsTestCase(unittest.TestCase):
     """Validate ``click.Command`` instances inside ``click.Group`` instances."""
+
+    maxDiff = None
 
     @staticmethod
     def _get_ctx():
@@ -779,6 +783,8 @@ class NestedCommandsTestCase(unittest.TestCase):
 class CommandFilterTestCase(unittest.TestCase):
     """Validate filtering of commands."""
 
+    maxDiff = None
+
     @staticmethod
     def _get_ctx():
         @click.group()
@@ -850,6 +856,8 @@ class CommandFilterTestCase(unittest.TestCase):
 
 class CustomMultiCommandTestCase(unittest.TestCase):
     """Validate ``click.MultiCommand`` instances."""
+
+    maxDiff = None
 
     def test_basics(self):
         """Validate a custom ``click.MultiCommand`` with no parameters.
@@ -967,6 +975,8 @@ class CustomMultiCommandTestCase(unittest.TestCase):
 class CommandCollectionTestCase(unittest.TestCase):
     """Validate ``click.CommandCollection`` instances."""
 
+    maxDiff = None
+
     def test_basics(self):
         "Validate a ``click.CommandCollection`` with grouped outputs."
 
@@ -1037,6 +1047,8 @@ class CommandCollectionTestCase(unittest.TestCase):
 
 class AutoEnvvarPrefixTestCase(unittest.TestCase):
     """Validate ``click auto_envvar_prefix``-setup instances."""
+
+    maxDiff = None
 
     def test_basics(self):
         """Validate a click application with ``auto_envvar_prefix`` option enabled."""
