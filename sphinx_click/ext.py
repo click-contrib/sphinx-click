@@ -38,8 +38,7 @@ def _process_lines(event_name: str) -> ty.Callable[[_T_Formatter], _T_Formatter]
             lines = list(func(ctx))
             if "sphinx-click-env" in ctx.meta:
                 ctx.meta["sphinx-click-env"].app.events.emit(event_name, ctx, lines)
-            for line in lines:
-                yield line
+            yield from lines
 
         return process_lines
 
@@ -81,7 +80,7 @@ def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str
             name = opt.name
             if opt.metavar:
                 name = opt.metavar.lstrip('<[{($').rstrip('>]})$')
-            rv += ' <{}>'.format(name)
+            rv += f' <{name}>'
         return rv  # type: ignore
 
     rv = [_write_opts(opt.opts)]
@@ -177,7 +176,7 @@ def _format_option(
     """Format the output for a `click.core.Option`."""
     opt_help = _get_help_record(ctx, opt)
 
-    yield '.. option:: {}'.format(opt_help[0])
+    yield f'.. option:: {opt_help[0]}'
     if opt_help[1]:
         yield ''
         bar_enabled = False
@@ -204,14 +203,13 @@ def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     ]
 
     for param in params:
-        for line in _format_option(ctx, param):
-            yield line
+        yield from _format_option(ctx, param)
         yield ''
 
 
 def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
     """Format the output of a `click.Argument`."""
-    yield '.. option:: {}'.format(arg.human_readable_name)
+    yield f'.. option:: {arg.human_readable_name}'
     yield ''
     yield _indent(
         '{} argument{}'.format(
@@ -233,8 +231,7 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
     params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
 
     for param in params:
-        for line in _format_argument(param):
-            yield line
+        yield from _format_argument(param)
         yield ''
 
 
@@ -242,7 +239,7 @@ def _format_envvar(
     param: ty.Union[click.core.Option, click.Argument]
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
-    yield '.. envvar:: {}'.format(param.envvar)
+    yield f'.. envvar:: {param.envvar}'
     yield '   :noindex:'
     yield ''
     if isinstance(param, click.Argument):
@@ -252,7 +249,7 @@ def _format_envvar(
         # first. For example, if '--foo' or '-f' are possible, use '--foo'.
         param_ref = param.opts[0]
 
-    yield _indent('Provide a default for :option:`{}`'.format(param_ref))
+    yield _indent(f'Provide a default for :option:`{param_ref}`')
 
 
 @_process_lines("sphinx-click-process-envars")
@@ -276,14 +273,13 @@ def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
             envvar=param.envvar,
         )
         yield ''
-        for line in _format_envvar(param):
-            yield line
+        yield from _format_envvar(param)
         yield ''
 
 
 def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
-    yield '.. object:: {}'.format(command.name)
+    yield f'.. object:: {command.name}'
 
     short_help = command.get_short_help_str()
 
@@ -340,15 +336,13 @@ def _format_command(
 
     # description
 
-    for line in _format_description(ctx):
-        yield line
+    yield from _format_description(ctx)
 
-    yield '.. program:: {}'.format(ctx.command_path)
+    yield f'.. program:: {ctx.command_path}'
 
     # usage
 
-    for line in _format_usage(ctx):
-        yield line
+    yield from _format_usage(ctx)
 
     # options
 
@@ -359,8 +353,7 @@ def _format_command(
         yield '.. rubric:: Options'
         yield ''
 
-    for line in lines:
-        yield line
+    yield from lines
 
     # arguments
 
@@ -369,8 +362,7 @@ def _format_command(
         yield '.. rubric:: Arguments'
         yield ''
 
-    for line in lines:
-        yield line
+    yield from lines
 
     # environment variables
 
@@ -379,13 +371,11 @@ def _format_command(
         yield '.. rubric:: Environment variables'
         yield ''
 
-    for line in lines:
-        yield line
+    yield from lines
 
     # description
 
-    for line in _format_epilog(ctx):
-        yield line
+    yield from _format_epilog(ctx)
 
     # if we're nesting commands, we need to do this slightly differently
     if nested in (NESTED_FULL, NESTED_NONE):
@@ -402,8 +392,7 @@ def _format_command(
         if command_obj.hidden:
             continue
 
-        for line in _format_subcommand(command_obj):
-            yield line
+        yield from _format_subcommand(command_obj)
         yield ''
 
 
@@ -436,14 +425,14 @@ class ClickDirective(rst.Directive):
             module_name, attr_name = module_path.split(':', 1)
         except ValueError:  # noqa
             raise self.error(
-                '"{}" is not of format "module:parser"'.format(module_path)
+                f'"{module_path}" is not of format "module:parser"'
             )
 
         try:
             with mock(self.env.config.sphinx_click_mock_imports):
                 mod = __import__(module_name, globals(), locals(), [attr_name])
         except (Exception, SystemExit) as exc:  # noqa
-            err_msg = 'Failed to import "{}" from "{}". '.format(attr_name, module_name)
+            err_msg = f'Failed to import "{attr_name}" from "{module_name}". '
             if isinstance(exc, SystemExit):
                 err_msg += 'The module appeared to call sys.exit()'
             else:
@@ -455,7 +444,7 @@ class ClickDirective(rst.Directive):
 
         if not hasattr(mod, attr_name):
             raise self.error(
-                'Module "{}" has no attribute "{}"'.format(module_name, attr_name)
+                f'Module "{module_name}" has no attribute "{attr_name}"'
             )
 
         parser = getattr(mod, attr_name)
