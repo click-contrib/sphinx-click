@@ -1,4 +1,5 @@
 import pickle
+import sys
 
 from docutils import nodes
 from sphinx import addnodes as sphinx_nodes
@@ -91,6 +92,10 @@ def test_commands(make_app, rootdir):
 
 
 def test_nested_full(make_app, rootdir):
+    # Make sure this sphinx-click reloads the module from this rootdir.
+    if "greet" in sys.modules:
+        del sys.modules["greet"]
+
     srcdir = rootdir / 'nested-full'
     app = make_app('xml', srcdir=srcdir)
     app.build()
@@ -144,3 +149,30 @@ def test_nested_full(make_app, rootdir):
     assert isinstance(subsection_b[1], nodes.paragraph)
     assert subsection_b[1].astext() == 'Greet the world.'
     assert isinstance(subsection_b[2], nodes.literal_block)
+
+    subsection_b_a = subsection_b[3]
+    assert isinstance(subsection_b_a, nodes.section)
+
+    assert isinstance(subsection_b_a[0], nodes.title)
+    assert subsection_b_a[0].astext() == 'wide'
+    assert isinstance(subsection_b_a[1], nodes.paragraph)
+    assert subsection_b_a[1].astext() == 'Greet all world wide things.'
+    assert isinstance(subsection_b_a[2], nodes.literal_block)
+
+    subsection_b_a_a = subsection_b_a[3]
+    assert isinstance(subsection_b_a_a, nodes.section)
+
+    assert isinstance(subsection_b_a_a[0], nodes.title)
+    assert subsection_b_a_a[0].astext() == 'web'
+    assert isinstance(subsection_b_a_a[1], nodes.paragraph)
+    assert subsection_b_a_a[1].astext() == 'Greet the internet.'
+    assert isinstance(subsection_b_a_a[2], nodes.literal_block)
+
+    subsection_b_b = subsection_b[4]
+    assert isinstance(subsection_b_b, nodes.section)
+
+    assert isinstance(subsection_b_b[0], nodes.title)
+    assert subsection_b_b[0].astext() == 'peace'
+    assert isinstance(subsection_b_b[1], nodes.paragraph)
+    assert subsection_b_b[1].astext() == 'Greet the world peace.'
+    assert isinstance(subsection_b_b[2], nodes.literal_block)
