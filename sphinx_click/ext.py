@@ -197,10 +197,6 @@ def _format_option(
 def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
-    print(ctx.command.params)
-    for param in ctx.command.params:
-        print(type(param))
-        print(isinstance(param, click.Option))
     params = [
         param
         for param in ctx.command.params
