@@ -483,9 +483,9 @@ def _format_summary(
         for line in _format_header(ctx):
             yield line
 
-        # usage
-        for line in _format_usage(ctx):
-            yield line
+    # usage
+    for line in _format_usage(ctx):
+        yield line
 
     for line in _format_subcommand_summary(ctx, commands):
         yield line
