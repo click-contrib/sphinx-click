@@ -218,6 +218,8 @@ class CommandTestCase(unittest.TestCase):
                 """
         A sample command.
 
+        .. _foobar:
+
         .. program:: foobar
         .. code-block:: shell
 
@@ -225,11 +227,15 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _foobar-option:
+
         .. option:: --option <option>
 
             A sample option
 
         .. rubric:: Arguments
+
+        .. _foobar-ARG:
 
         .. option:: ARG
 
@@ -237,6 +243,8 @@ class CommandTestCase(unittest.TestCase):
 
             A sample argument
 
+
+        .. _foobar-ARG_NO_HELP:
 
         .. option:: ARG_NO_HELP
 
@@ -315,9 +323,13 @@ class CommandTestCase(unittest.TestCase):
 
             :default: ``'Some default computed at runtime!'``
 
+        .. _foobar-string-default:
+
         .. option:: --string-default <string_default>
 
             :default: ``'abc'``
+
+        .. _foobar-empty-string-default:
 
         .. option:: --empty-string-default <empty_string_default>
 
@@ -344,6 +356,8 @@ class CommandTestCase(unittest.TestCase):
                 """
         A sample command.
 
+        .. _foobar:
+
         .. program:: foobar
         .. code-block:: shell
 
@@ -351,9 +365,13 @@ class CommandTestCase(unittest.TestCase):
 
         .. rubric:: Options
 
+        .. _foobar-no-set:
+
         .. option:: --no-set <no_set>
 
             :default: ``0``
+
+        .. _foobar-set-false:
 
         .. option:: --set-false <set_false>
         """

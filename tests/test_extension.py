@@ -82,14 +82,16 @@ def test_commands(make_app, rootdir):
     assert section[0].astext() == 'greet'
     assert isinstance(section[1], nodes.paragraph)
     assert section[1].astext() == 'A sample command group.'
-    assert isinstance(section[2], nodes.literal_block)
+    assert isinstance(section[2], nodes.target)
+    assert section[2].attributes['refid'] == 'greet'
+    assert isinstance(section[3], nodes.literal_block)
 
     # we should only show a single command, 'world'
-    assert isinstance(section[3], nodes.rubric)
-    assert section[3].astext() == 'Commands'
-    assert isinstance(section[4], sphinx_nodes.index)
-    assert isinstance(section[5], sphinx_nodes.desc)
-    assert section[5].astext() == 'world\n\nGreet the world.'
+    assert isinstance(section[4], nodes.rubric)
+    assert section[4].astext() == 'Commands'
+    assert isinstance(section[5], sphinx_nodes.index)
+    assert isinstance(section[6], sphinx_nodes.desc)
+    assert section[6].astext() == 'world\n\nGreet the world.'
 
 
 def test_nested_full(make_app, rootdir):

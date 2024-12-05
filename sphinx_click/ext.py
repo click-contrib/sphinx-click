@@ -27,7 +27,7 @@ NESTED_COMPLETE = 'complete'
 NESTED_FULL = 'full'
 NESTED_SHORT = 'short'
 NESTED_NONE = 'none'
-NestedT = ty.Literal['full', 'short', 'none', None]
+NestedT = ty.Literal['complete', 'full', 'short', 'none', None]
 
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
@@ -266,7 +266,7 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 def _format_envvar(
     ctx: click.Context,
-    param: ty.Union[click.core.Option, click.Argument],
+    param: click.core.Parameter,
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     command_name = _format_command_name(ctx)
@@ -347,10 +347,12 @@ def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield from _format_help(ctx.command.epilog)
 
 
-def _get_lazyload_commands(ctx: click.Context) -> ty.Dict[str, click.Command]:
+def _get_lazyload_commands(
+    ctx: click.Context, multi_command: click.MultiCommand
+) -> ty.Dict[str, click.Command]:
     commands = {}
-    for command in ctx.command.list_commands(ctx):
-        commands[command] = ctx.command.get_command(ctx, command)
+    for command in multi_command.list_commands(ctx):
+        commands[command] = multi_command.get_command(ctx, command)
 
     return commands
 
@@ -362,7 +364,7 @@ def _filter_commands(
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
     if not lookup and isinstance(ctx.command, click.MultiCommand):
-        lookup = _get_lazyload_commands(ctx)
+        lookup = _get_lazyload_commands(ctx, ctx.command)
 
     if commands is None:
         return sorted(lookup.values(), key=lambda item: item.name)
@@ -403,7 +405,7 @@ def _format_subcommand_summary(
 
 def _format_command(
     ctx: click.Context,
-    nested: str,
+    nested: NestedT,
     commands: ty.Optional[ty.List[str]] = None,
     hide_header: bool = False,
 ) -> ty.Generator[str, None, None]:
@@ -553,7 +555,7 @@ class ClickDirective(rst.Directive):
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
         hide_header: bool = False,
-    ) -> ty.List[nodes.section]:
+    ) -> ty.List[nodes.Element]:
         """Generate the relevant Sphinx nodes.
 
         Format a `click.Group` or `click.Command`.
@@ -582,7 +584,7 @@ class ClickDirective(rst.Directive):
         hide_current_header = hide_header
         if nested == NESTED_COMPLETE:
             lines = itertools.chain(lines, _format_summary(ctx, commands, hide_header))
-            nested = NESTED_FULL
+            nested = ty.cast(NestedT, NESTED_FULL)
             hide_current_header = True
 
         ctx.meta["sphinx-click-env"] = self.env
@@ -627,7 +629,8 @@ class ClickDirective(rst.Directive):
                         )
                     )
 
-        final_nodes = []
+        final_nodes: ty.List[nodes.Element]
+        section: nodes.Element
         if hide_header:
             final_nodes = subcommand_nodes
 
@@ -659,7 +662,7 @@ class ClickDirective(rst.Directive):
     def _post_process(
         self,
         command: click.Command,
-        nodes: ty.List[nodes.section],
+        nodes: ty.List[nodes.Element],
     ) -> None:
         """Runs the post-processor, if any, for the given command and nodes.
 
@@ -672,7 +675,7 @@ class ClickDirective(rst.Directive):
         if self.postprocessor:
             self.postprocessor(command, nodes)
 
-    def run(self) -> ty.Sequence[nodes.section]:
+    def run(self) -> ty.Sequence[nodes.Element]:
         self.env = self.state.document.settings.env
 
         command = self._load_module(self.arguments[0])
@@ -693,7 +696,7 @@ class ClickDirective(rst.Directive):
 
         self.postprocessor = None
         if 'post-process' in self.options:
-            postprocessor_module_path = self.options.get('post-process')
+            postprocessor_module_path = self.options['post-process']
             self.postprocessor = self._load_module(postprocessor_module_path)
 
         if show_nested:
