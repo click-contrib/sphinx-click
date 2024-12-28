@@ -239,7 +239,7 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 def _format_envvar(
-    param: ty.Union[click.core.Option, click.Argument]
+    param: ty.Union[click.core.Option, click.Argument],
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
