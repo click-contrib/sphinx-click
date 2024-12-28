@@ -116,7 +116,7 @@ def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str
             % (
                 ', '.join(repr(d) for d in opt.default)
                 if isinstance(opt.default, (list, tuple))
-                else repr(opt.default),
+                else repr(opt.default)
             )
         )
 

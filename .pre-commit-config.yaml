@@ -6,11 +6,11 @@ default_language_version:
   python: python3
 repos:
   - repo: https://github.com/ambv/black
-    rev: 23.7.0
+    rev: 24.10.0
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: mixed-line-ending
@@ -24,11 +24,11 @@ repos:
         files: .*\.(yaml|yml)$
       - id: check-added-large-files
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
+    rev: v1.14.0
     hooks:
       - id: mypy
         additional_dependencies:
