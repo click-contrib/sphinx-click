@@ -44,16 +44,28 @@ Once enabled, *sphinx-click* enables automatic documentation for
      ``short``
        List sub-commands with short documentation.
 
+     ``complete``
+       List sub-commands with short documentation, then also list them with
+       full documentation.
+
      ``none``
        Do not list sub-commands.
 
      Defaults to ``short`` unless ``show-nested`` (deprecated) is set.
+
+   ``:hide-header:``
+     Omit the title, description and usage example, thus only showing the
+     subcommands.
 
    ``:commands:``
      Document only listed commands.
 
    ``:show-nested:``
      This option is deprecated; use ``nested`` instead.
+
+   ``:post-process:``
+     Add a post-processing hook that will run for each command.
+     See :ref:`post-processing` for more information.
 
    The generated documentation includes anchors for the generated commands,
    their options and their environment variables using the `Sphinx standard
@@ -275,6 +287,43 @@ assuming the group or command in ``git.git`` is named ``cli``.
 
 Refer to `issue #2 <https://github.com/click-contrib/sphinx-click/issues/2>`__
 for more information.
+
+.. _post-processing:
+
+Post-processing hook
+--------------------
+You can add a post-processing hook that will run for each command as its
+documentation is generated. To do so, use the ``:post-process:`` option,
+e.g.:
+
+.. code-block:: rst
+
+    .. click:: module:parser
+       :prog: hello-world
+       :post-process: my_library.my_module:my_function
+
+The function will get the command object and a list of
+``docutils.nodes.Element`` entries that were generated for it, which you
+can then modify to your heart's content.
+
+Example:
+
+.. code-block:: python
+
+   def mark_super_user_commands(command: click.Command, nodes: List[Element]) -> None:
+       """Marks all commands that start with 'su-' as super user commands."""
+       if nodes and len(nodes) > 0 and len(nodes[0].children) > 0:
+           command_node = nodes[0]
+           if command.name.startswith("su-"):
+               command_title = command_node.children[0]
+               text_node: docutils.nodes.Text = command_title.children[0]
+               command_title.replace(text_node, docutils.nodes.Text(text_node.as_text() + " <-- SUPER!"))
+
+**Note**: The function should be specified using the module path and function
+name with a colon between them, e.g. ``my_library.my_module:my_function``.
+Be sure that this is accessible when generating the documentation (e.g.
+add it to the ``PYTHONPATH``).
+
 
 .. URLs
 

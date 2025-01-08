@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    Additional anchors are now generated for cross-referencing, namely one for each
+    ``.. program::`` directive, as well as an anchor for each option name and environment
+    variable.
+
+    Added the ``:hide-header:`` option, which omits the title and description from the output.
+
+    Added a ``complete`` setting to the ``:nested:`` option (i.e. ``:nested: complete``), which
+    produces a more detailed listing with title, description, usage, short summary and then the
+    full nested details.
+
+    Added a ``:post-process:`` option, which configures the plugin to invoke the specified
+    function in the specified module on the list of generated nodes for each command. For more
+    information, refer to the `documentation`__.
+
+    .. __: https://sphinx-click.readthedocs.io/en/latest/usage/#post-processing
