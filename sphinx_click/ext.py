@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import functools
 import re
@@ -6,10 +8,21 @@ import typing as ty
 import warnings
 
 try:
-    import asyncclick as click
+    import asyncclick
+
+    ASYNCCLICK_SUPPORT = True
 except ImportError:
+    ASYNCCLICK_SUPPORT = False
+try:
     import click
-import click.core
+
+    CLICK_SUPPORT = True
+except ImportError as err:
+    CLICK_SUPPORT = False
+    if ASYNCCLICK_SUPPORT:
+        pass
+    else:
+        raise err
 from docutils import nodes
 from docutils.parsers import rst
 from docutils.parsers.rst import directives
@@ -28,13 +41,48 @@ NestedT = ty.Literal['full', 'short', 'none', None]
 
 ANSI_ESC_SEQ_RE = re.compile(r'\x1B\[\d+(;\d+){0,2}m', flags=re.MULTILINE)
 
-_T_Formatter = ty.Callable[[click.Context], ty.Generator[str, None, None]]
+if ASYNCCLICK_SUPPORT and CLICK_SUPPORT:
+    click_context_type = asyncclick.Context | click.Context
+    click_option_type = asyncclick.core.Option | click.core.Option
+    click_choice_type = asyncclick.Choice | click.Choice
+    click_argument_type = asyncclick.Argument | click.Argument
+    click_command_type = asyncclick.Command | click.Command
+    click_multicommand_type = asyncclick.MultiCommand | click.MultiCommand
+    click_group_type = asyncclick.Group | click.Group
+    click_command_collection_type = (
+        asyncclick.CommandCollection | click.CommandCollection
+    )
+    join_options = click.formatting.join_options
+elif ASYNCCLICK_SUPPORT:
+    click_context_type = asyncclick.Context
+    click_option_type = asyncclick.core.Option
+    click_choice_type = asyncclick.Choice
+    click_argument_type = asyncclick.Argument
+    click_command_type = asyncclick.Command
+    click_multicommand_type = asyncclick.MultiCommand
+    click_group_type = asyncclick.Group
+    click_command_collection_type = asyncclick.CommandCollection
+    join_options = asyncclick.formatting.join_options
+else:
+    click_context_type = click.Context
+    click_option_type = click.core.Option
+    click_choice_type = click.Choice
+    click_argument_type = click.Argument
+    click_command_type = click.Command
+    click_multicommand_type = click.MultiCommand
+    click_group_type = click.Group
+    click_command_collection_type = click.CommandCollection
+    join_options = click.formatting.join_options
+
+_T_Formatter = ty.Callable[[click_context_type], ty.Generator[str, None, None]]
 
 
 def _process_lines(event_name: str) -> ty.Callable[[_T_Formatter], _T_Formatter]:
     def decorator(func: _T_Formatter) -> _T_Formatter:
         @functools.wraps(func)
-        def process_lines(ctx: click.Context) -> ty.Generator[str, None, None]:
+        def process_lines(
+            ctx: click_context_type,
+        ) -> ty.Generator[str, None, None]:
             lines = list(func(ctx))
             if "sphinx-click-env" in ctx.meta:
                 ctx.meta["sphinx-click-env"].app.events.emit(event_name, ctx, lines)
@@ -56,7 +104,7 @@ def _indent(text: str, level: int = 1) -> str:
     return ''.join(prefixed_lines())
 
 
-def _get_usage(ctx: click.Context) -> str:
+def _get_usage(ctx: click_context_type) -> str:
     """Alternative, non-prefixed version of 'get_usage'."""
     formatter = ctx.make_formatter()
     pieces = ctx.command.collect_usage_pieces(ctx)
@@ -64,7 +112,10 @@ def _get_usage(ctx: click.Context) -> str:
     return formatter.getvalue().rstrip('\n')  # type: ignore
 
 
-def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str, str]:
+def _get_help_record(
+    ctx: click_context_type,
+    opt: click_option_type,
+) -> ty.Tuple[str, str]:
     """Re-implementation of click.Opt.get_help_record.
 
     The variant of 'get_help_record' found in Click makes uses of slashes to
@@ -76,7 +127,7 @@ def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str
     """
 
     def _write_opts(opts: ty.List[str]) -> str:
-        rv, _ = click.formatting.join_options(opts)
+        rv, _ = join_options(opts)
         if not opt.is_flag and not opt.count:
             name = opt.name
             if opt.metavar:
@@ -120,7 +171,7 @@ def _get_help_record(ctx: click.Context, opt: click.core.Option) -> ty.Tuple[str
             )
         )
 
-    if isinstance(opt.type, click.Choice):
+    if isinstance(opt.type, click_choice_type):
         extras.append(':options: %s' % ' | '.join(str(x) for x in opt.type.choices))
 
     if extras:
@@ -150,7 +201,9 @@ def _format_help(help_string: str) -> ty.Generator[str, None, None]:
 
 
 @_process_lines("sphinx-click-process-description")
-def _format_description(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_description(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format the description for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -162,7 +215,9 @@ def _format_description(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 @_process_lines("sphinx-click-process-usage")
-def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_usage(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format the usage for a `click.Command`."""
     yield '.. code-block:: shell'
     yield ''
@@ -172,7 +227,8 @@ def _format_usage(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 def _format_option(
-    ctx: click.Context, opt: click.core.Option
+    ctx: click_context_type,
+    opt: click_option_type,
 ) -> ty.Generator[str, None, None]:
     """Format the output for a `click.core.Option`."""
     opt_help = _get_help_record(ctx, opt)
@@ -194,13 +250,15 @@ def _format_option(
 
 
 @_process_lines("sphinx-click-process-options")
-def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_options(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format all `click.Option` for a `click.Command`."""
     # the hidden attribute is part of click 7.x only hence use of getattr
     params = [
         param
         for param in ctx.command.params
-        if isinstance(param, click.core.Option) and not getattr(param, 'hidden', False)
+        if isinstance(param, click_option_type) and not getattr(param, 'hidden', False)
     ]
 
     for param in params:
@@ -209,7 +267,9 @@ def _format_options(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield ''
 
 
-def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
+def _format_argument(
+    arg: click_argument_type,
+) -> ty.Generator[str, None, None]:
     """Format the output of a `click.Argument`."""
     yield '.. option:: {}'.format(arg.human_readable_name)
     yield ''
@@ -228,9 +288,11 @@ def _format_argument(arg: click.Argument) -> ty.Generator[str, None, None]:
 
 
 @_process_lines("sphinx-click-process-arguments")
-def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_arguments(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format all `click.Argument` for a `click.Command`."""
-    params = [x for x in ctx.command.params if isinstance(x, click.Argument)]
+    params = [x for x in ctx.command.params if isinstance(x, click_argument_type)]
 
     for param in params:
         for line in _format_argument(param):
@@ -239,13 +301,13 @@ def _format_arguments(ctx: click.Context) -> ty.Generator[str, None, None]:
 
 
 def _format_envvar(
-    param: ty.Union[click.core.Option, click.Argument],
+    param: click_option_type | click_argument_type,
 ) -> ty.Generator[str, None, None]:
     """Format the envvars of a `click.Option` or `click.Argument`."""
     yield '.. envvar:: {}'.format(param.envvar)
     yield '   :noindex:'
     yield ''
-    if isinstance(param, click.Argument):
+    if isinstance(param, click_argument_type):
         param_ref = param.human_readable_name
     else:
         # if a user has defined an opt with multiple "aliases", always use the
@@ -256,7 +318,9 @@ def _format_envvar(
 
 
 @_process_lines("sphinx-click-process-envars")
-def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_envvars(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format all envvars for a `click.Command`."""
 
     auto_envvar_prefix = ctx.auto_envvar_prefix
@@ -281,7 +345,9 @@ def _format_envvars(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield ''
 
 
-def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
+def _format_subcommand(
+    command: click_command_type,
+) -> ty.Generator[str, None, None]:
     """Format a sub-command of a `click.Command` or `click.Group`."""
     yield '.. object:: {}'.format(command.name)
 
@@ -296,7 +362,9 @@ def _format_subcommand(command: click.Command) -> ty.Generator[str, None, None]:
 
 
 @_process_lines("sphinx-click-process-epilog")
-def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
+def _format_epilog(
+    ctx: click_context_type,
+) -> ty.Generator[str, None, None]:
     """Format the epilog for a given `click.Command`.
 
     We parse this as reStructuredText, allowing users to embed rich
@@ -306,7 +374,9 @@ def _format_epilog(ctx: click.Context) -> ty.Generator[str, None, None]:
         yield from _format_help(ctx.command.epilog)
 
 
-def _get_lazyload_commands(ctx: click.Context) -> ty.Dict[str, click.Command]:
+def _get_lazyload_commands(
+    ctx: click_context_type,
+) -> ty.Dict[str, click_command_type]:
     commands = {}
     for command in ctx.command.list_commands(ctx):
         commands[command] = ctx.command.get_command(ctx, command)
@@ -315,12 +385,12 @@ def _get_lazyload_commands(ctx: click.Context) -> ty.Dict[str, click.Command]:
 
 
 def _filter_commands(
-    ctx: click.Context,
+    ctx: click_context_type,
     commands: ty.Optional[ty.List[str]] = None,
-) -> ty.List[click.Command]:
+) -> ty.List[click_command_type]:
     """Return list of used commands."""
     lookup = getattr(ctx.command, 'commands', {})
-    if not lookup and isinstance(ctx.command, click.MultiCommand):
+    if not lookup and isinstance(ctx.command, click_multicommand_type):
         lookup = _get_lazyload_commands(ctx)
 
     if commands is None:
@@ -330,7 +400,7 @@ def _filter_commands(
 
 
 def _format_command(
-    ctx: click.Context,
+    ctx: click_context_type,
     nested: NestedT,
     commands: ty.Optional[ty.List[str]] = None,
 ) -> ty.Generator[str, None, None]:
@@ -429,7 +499,7 @@ class ClickDirective(rst.Directive):
         'show-nested': directives.flag,
     }
 
-    def _load_module(self, module_path: str) -> ty.Union[click.Command, click.Group]:
+    def _load_module(self, module_path: str) -> click_command_type | click_group_type:
         """Load the module."""
 
         try:
@@ -460,7 +530,7 @@ class ClickDirective(rst.Directive):
 
         parser = getattr(mod, attr_name)
 
-        if not isinstance(parser, (click.Command, click.Group)):
+        if not isinstance(parser, click_command_type | click_group_type):
             raise self.error(
                 '"{}" of type "{}" is not click.Command or click.Group.'
                 '"click.BaseCommand"'.format(type(parser), module_path)
@@ -470,8 +540,8 @@ class ClickDirective(rst.Directive):
     def _generate_nodes(
         self,
         name: str,
-        command: click.Command,
-        parent: ty.Optional[click.Context],
+        command: click_command_type,
+        parent: ty.Optional[click_context_type],
         nested: NestedT,
         commands: ty.Optional[ty.List[str]] = None,
         semantic_group: bool = False,
@@ -490,7 +560,10 @@ class ClickDirective(rst.Directive):
             `click.CommandCollection`.
         :returns: A list of nested docutil nodes
         """
-        ctx = click.Context(command, info_name=name, parent=parent)
+        if ASYNCCLICK_SUPPORT and isinstance(command, asyncclick.Command):
+            ctx = asyncclick.Context(command, info_name=name, parent=parent)
+        else:
+            ctx = click.Context(command, info_name=name, parent=parent)
 
         if command.hidden:
             return []
@@ -523,7 +596,7 @@ class ClickDirective(rst.Directive):
         # Subcommands
 
         if nested == NESTED_FULL:
-            if isinstance(command, click.CommandCollection):
+            if isinstance(command, click_command_collection_type):
                 for source in command.sources:
                     section.extend(
                         self._generate_nodes(

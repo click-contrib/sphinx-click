@@ -1,11 +1,32 @@
 import pickle
 
+try:
+    import asyncclick
+
+    ASYNCCLICK_SUPPORT = True
+except ImportError:
+    ASYNCCLICK_SUPPORT = False
+
+try:
+    import click
+
+    CLICK_SUPPORT = True
+except ImportError as err:
+    CLICK_SUPPORT = False
+    if ASYNCCLICK_SUPPORT:
+        pass
+    else:
+        raise err
+
 from docutils import nodes
 from sphinx import addnodes as sphinx_nodes
 
 
 def test_basics(make_app, rootdir):
-    srcdir = rootdir / 'basics'
+    if ASYNCCLICK_SUPPORT:
+        srcdir = rootdir / 'async_basics'
+    else:
+        srcdir = rootdir / 'basics'
     app = make_app('xml', srcdir=srcdir)
     app.build()
 
@@ -51,6 +72,10 @@ def test_basics(make_app, rootdir):
 
 
 def test_commands(make_app, rootdir):
+    if ASYNCCLICK_SUPPORT:
+        srcdir = rootdir / 'async_commands'
+    else:
+        srcdir = rootdir / 'basics'
     srcdir = rootdir / 'commands'
     app = make_app('xml', srcdir=srcdir)
     app.build()
@@ -91,6 +116,10 @@ def test_commands(make_app, rootdir):
 
 
 def test_nested_full(make_app, rootdir):
+    if ASYNCCLICK_SUPPORT:
+        srcdir = rootdir / 'async_nested-full'
+    else:
+        srcdir = rootdir / 'nested-full'
     srcdir = rootdir / 'nested-full'
     app = make_app('xml', srcdir=srcdir)
     app.build()

@@ -1,7 +1,19 @@
 import textwrap
 import unittest
 
-import click
+try:
+    import asyncclick
+
+    ASYNC_SUPPORT = True
+except ImportError:
+    ASYNC_SUPPORT = False
+try:
+    import click
+except ImportError as err:
+    if ASYNC_SUPPORT:
+        import asyncclick as click
+    else:
+        raise err
 from sphinx_click import ext
 
 CLICK_VERSION = tuple(int(x) for x in click.__version__.split('.')[0:2])
