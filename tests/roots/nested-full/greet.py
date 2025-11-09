@@ -16,7 +16,31 @@ def hello(user):
     click.echo('Hello %s' % user)
 
 
-@greet.command()
+@greet.group()
 def world():
     """Greet the world."""
     click.echo('Hello world!')
+
+
+@world.command()
+def peace():
+    """Greet the world peace."""
+    click.echo('Hello world peace!')
+
+
+@world.command()
+def traveler():
+    """Greet a globetrotter."""
+    click.echo('Hello world traveler!')
+
+
+@world.group()
+def wide():
+    """Greet all world wide things."""
+    click.echo('Hello world wide ...!')
+
+
+@wide.command()
+def web():
+    """Greet the internet."""
+    click.echo('Hello world wide web!')
