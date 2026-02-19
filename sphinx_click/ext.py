@@ -18,7 +18,7 @@ from docutils import statemachine
 from sphinx import application
 from sphinx.util import logging
 from sphinx.util import nodes as sphinx_nodes
-from sphinx.ext.autodoc import mock
+from sphinx.ext.autodoc.mock import mock
 
 LOG = logging.getLogger(__name__)
 
