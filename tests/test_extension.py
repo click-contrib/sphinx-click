@@ -4,6 +4,27 @@ from docutils import nodes
 from sphinx import addnodes as sphinx_nodes
 
 
+def test_mock_import_compatibility():
+    """Test that sphinx_click.ext.mock is callable after sphinx.ext.autodoc.mock is imported.
+
+    Regression test for https://github.com/click-contrib/sphinx-click/issues/159
+
+    When sphinx_autodoc_typehints imports `from sphinx.ext.autodoc.mock import mock`,
+    it causes Python to bind the submodule as an attribute on sphinx.ext.autodoc,
+    which can shadow the re-exported mock function. sphinx_click must import mock
+    directly from the submodule to avoid this issue.
+    """
+    # Simulate sphinx_autodoc_typehints being loaded first
+    from sphinx.ext.autodoc.mock import mock  # noqa: F401
+
+    # Now import sphinx_click (as would happen during Sphinx extension loading)
+    import sphinx_click.ext
+
+    # Verify the mock function is callable
+    with sphinx_click.ext.mock([]):
+        pass
+
+
 def test_basics(make_app, rootdir):
     srcdir = rootdir / 'basics'
     app = make_app('xml', srcdir=srcdir)
